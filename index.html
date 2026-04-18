@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WareCore Reports - Калькулятор времени</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #60a5fa;
+            --secondary: #94a3b8;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+        }
+
+        [data-theme="lime"] {
+            --primary: #84cc16;
+            --primary-dark: #65a30d;
+            --primary-light: #a3e635;
+            --secondary: #a3e635;
+            --success: #84cc16;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --background: #f0fdf4;
+            --surface: #ffffff;
+            --border: #bbf7d0;
+            --text-primary: #14532d;
+            --text-secondary: #166534;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="purple"] {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #a78bfa;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --background: #faf5ff;
+            --surface: #ffffff;
+            --border: #e9d5ff;
+            --text-primary: #1e1b4b;
+            --text-secondary: #6b21a8;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .nav {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding-left: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:hover {
+            background: var(--background);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--background);
+        }
+
+        .theme-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .theme-preview {
+            width: 48px;
+            height: 32px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--border);
+        }
+
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .user-dropdown select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            width: 100%;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--background);
+            color: var(--text-primary);
+        }
+
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .user-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 20px;
+            background: var(--background);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .user-card-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .user-card-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .quick-calc-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--background);
+            color: var(--text-primary);
+            transition: all 0.2s;
+            resize: vertical;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .result-display {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 56px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 16px;
+            line-height: 1;
+        }
+
+        .result-unit {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-top: 0;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 150px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            overflow-x: hidden;
+            letter-spacing: 2px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+        }
+
+        .stat-card:nth-child(2) {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .stat-card:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .stat-card:nth-child(4) {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .stat-card.stat-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .stat-card.stat-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .stat-card.stat-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+        }
+
+        th {
+            background: var(--background);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: var(--background);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-yellow {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-blue {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .user-profile {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 16px;
+            }
+            .quick-calc-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-content">
+                <div class="logo-icon">WC</div>
+                <div>
+                    <div class="logo-text">WareCore</div>
+                    <div class="logo-subtitle">Reports System</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Основное</div>
+                <div class="nav-item active" onclick="switchTab('quick')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Быстрый расчёт
+                </div>
+                <div class="nav-item" onclick="switchTab('batch')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Пакетный анализ
+                </div>
+                <div class="nav-item" onclick="switchTab('pairs')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Пакетный анализ 2.0
+                </div>
+                <div class="nav-item" onclick="switchTab('pallet')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M9 3v18"/>
+                        <path d="M15 3v18"/>
+                    </svg>
+                    Анализ паллет
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Инструменты</div>
+                <div class="nav-item" onclick="switchTab('history')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    История
+                </div>
+                <div class="nav-item" onclick="switchTab('settings')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    Настройки
+                </div>
+            </div>
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+        <div class="header">
+            <div>
+                <h1 class="header-title">Калькулятор разницы времени</h1>
+                <p class="header-subtitle">Вычисление разницы между временными отметками</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="clearAll()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Очистить
+                </button>
+            </div>
+        </div>
+
+        <div id="quickTab">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Быстрый расчёт разницы</h2>
+                        <p class="card-subtitle">Вычислите разницу между двумя временными отметками</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Времена (начальное и конечное через табуляцию)</label>
+                    <textarea id="quickTimeInput" class="form-input" placeholder="16:56	19:30" rows="2" style="min-height: 60px;"></textarea>
+                </div>
+
+                <div class="result-display">
+                    <div class="result-label">Разница в минутах</div>
+                    <div class="result-value" id="quickResult">0</div>
+                    <div class="result-unit">МИНУТ</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="batchTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Пакетный анализ штабелеров</h2>
+                        <p class="card-subtitle">Вставьте таблицу статусов штабелеров из Excel</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="calculateBatch()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                            <polyline points="17 6 23 6 23 12"/>
+                        </svg>
+                        Рассчитать
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Список временных меток (HH:MM:SS)</label>
+                    <textarea id="timeInput" class="form-input" placeholder="Вставьте список временных меток&#10;&#10;16:56:30&#10;19:30:15&#10;20:45:00&#10;...&#10;&#10;Время будет разбито на группы по 3 элемента и рассчитаны разницы"></textarea>
+                </div>
+            </div>
+
+            <div id="batchResults" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card stat-danger">
+                        <div class="stat-label">Количество F06</div>
+                        <div class="stat-value" id="f06Count">0</div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-label">Время ожидания технической службы</div>
+                        <div class="stat-value" id="sum12">0</div>
+                        <div class="stat-unit">МИНУТ</div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-label">Общее время ошибок</div>
+                        <div class="stat-value" id="sum13">0</div>
+                        <div class="stat-unit">МИНУТ</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Результаты по группам</h2>
+                    </div>
+
+                    <div id="groupResults" style="margin-bottom: 20px;"></div>
+
+                    <div class="card-header">
+                        <h2 class="card-title">Подробный расчёт (первые 3 группы)</h2>
+                    </div>
+
+                    <div id="detailedResults"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pairsTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Пакетный анализ 2.0</h2>
+                        <p class="card-subtitle">Разбивка временных меток на пары и расчёт разниц</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="calculatePairs()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                            <polyline points="17 6 23 6 23 12"/>
+                        </svg>
+                        Рассчитать
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Список временных меток (HH:MM:SS)</label>
+                    <textarea id="pairsInput" class="form-input" placeholder="Вставьте список временных меток&#10;&#10;16:56:30&#10;19:30:15&#10;20:45:00&#10;21:10:30&#10;...&#10;&#10;Время будет разбито на пары (1-2, 3-4 и т.д.) и рассчитаны разницы"></textarea>
+                </div>
+            </div>
+
+            <div id="pairsResults" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card stat-danger">
+                        <div class="stat-label">Количество F06</div>
+                        <div class="stat-value" id="pairsF06Count">0</div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-label">Итоговая сумма</div>
+                        <div class="stat-value" id="pairsSum">0</div>
+                        <div class="stat-unit">МИНУТ</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Результаты по парам</h2>
+                    </div>
+
+                    <div id="pairsGroupResults" style="margin-bottom: 20px;"></div>
+
+                    <div class="card-header">
+                        <h2 class="card-title">Подробный расчёт (первые 3 пары)</h2>
+                    </div>
+
+                    <div id="pairsDetailedResults"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="historyTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">История расчётов</h2>
+                </div>
+                <p style="color: var(--text-secondary); padding: 20px;">История расчётов пока пуста.</p>
+            </div>
+        </div>
+
+        <div id="palletTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Анализ паллет</h2>
+                        <p class="card-subtitle">Группировка паллет по идентификатору и определение пар</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="analyzePallets()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                            <polyline points="17 6 23 6 23 12"/>
+                        </svg>
+                        Анализировать
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Список паллет (ID\tD1 или ID\tD2)</label>
+                    <textarea id="palletInput" class="form-input" placeholder="Вставьте список паллет&#10;&#10;L01X01Y73Z01D1&#10;L01X01Y73Z01D2&#10;L02X02Y74Z01D1&#10;..."></textarea>
+                </div>
+            </div>
+
+            <div id="palletResults" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card stat-success">
+                        <div class="stat-label">Парные паллеты</div>
+                        <div class="stat-value" id="pairedCount">0</div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-label">Непарные паллеты</div>
+                        <div class="stat-value" id="unpairedCount">0</div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-label">Всего паллет</div>
+                        <div class="stat-value" id="totalCount">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Результаты анализа</h2>
+                    </div>
+                    <div id="palletOutput" style="white-space: pre-wrap; font-family: monospace; color: var(--text-primary);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Настройки</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Тема оформления</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <button class="theme-btn" onclick="setTheme('light')" id="lightThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);"></div>
+                            <span>Светлая</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('dark')" id="darkThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);"></div>
+                            <span>Тёмная</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('lime')" id="limeThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);"></div>
+                            <span>Лаймовая</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('purple')" id="purpleThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"></div>
+                            <span>Фиолетовая</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Размер шрифта</label>
+                    <select id="fontSizeSelector" onchange="setFontSize(this.value)" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); font-size: 14px; cursor: pointer; width: 100%;">
+                        <option value="small">Мелкий</option>
+                        <option value="medium" selected>Средний</option>
+                        <option value="large">Крупный</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Автоматический расчёт</label>
+                    <div class="toggle-option">
+                        <input type="checkbox" id="autoCalcCheckbox" onchange="setAutoCalc(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>Автоматически рассчитывать при вставке данных</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Показывать подсказки</label>
+                    <div class="toggle-option">
+                        <input type="checkbox" id="showHintsCheckbox" onchange="setShowHints(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>Показывать подсказки и примеры</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Сохранять историю расчётов</label>
+                    <div class="toggle-option">
+                        <input type="checkbox" id="saveHistoryCheckbox" onchange="setSaveHistory(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>Сохранять историю расчётов</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function parseTimeHM(timeStr) {
+            const parts = timeStr.trim().split(':');
+            if (parts.length !== 2) return null;
+            
+            const hours = parseInt(parts[0]);
+            const minutes = parseInt(parts[1]);
+            
+            if (isNaN(hours) || isNaN(minutes)) return null;
+            if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+            
+            return hours * 60 + minutes;
+        }
+
+        function quickCalculate() {
+            const input = document.getElementById('quickTimeInput').value;
+            const parts = input.trim().split(/[\n\t\s]+/).filter(p => p.trim());
+            
+            if (parts.length < 2) {
+                document.getElementById('quickResult').textContent = '—';
+                return;
+            }
+            
+            const start = parseTimeHM(parts[0]);
+            const end = parseTimeHM(parts[1]);
+            
+            if (start === null || end === null) {
+                document.getElementById('quickResult').textContent = '—';
+                return;
+            }
+            
+            let diff = end - start;
+            if (diff < 0) {
+                diff += 24 * 60;
+            }
+            
+            document.getElementById('quickResult').textContent = diff;
+        }
+
+        document.getElementById('quickTimeInput').addEventListener('input', quickCalculate);
+
+        function parseTime(timeStr) {
+            const parts = timeStr.trim().split(':');
+            if (parts.length !== 3) return null;
+            
+            const hours = parseInt(parts[0]);
+            const minutes = parseInt(parts[1]);
+            const seconds = parseInt(parts[2]);
+            
+            if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null;
+            
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+
+        function formatDuration(seconds) {
+            if (seconds < 0) return 'Ошибка';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function parseTimeHMSS(timeStr) {
+            const parts = timeStr.trim().split(':');
+            if (parts.length !== 3) return null;
+            
+            const hours = parseInt(parts[0]);
+            const minutes = parseInt(parts[1]);
+            const seconds = parseInt(parts[2]);
+            
+            if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null;
+            
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+
+        function calculateBatch() {
+            const input = document.getElementById('timeInput').value;
+            
+            if (!input.trim()) {
+                alert('Пожалуйста, вставьте список временных меток');
+                return;
+            }
+
+            const lines = input.trim().split('\n').filter(line => line.trim());
+            
+            if (lines.length < 3) {
+                alert('Недостаточно данных. Нужно минимум 3 временные метки');
+                return;
+            }
+
+            // Парсим временные метки в секунды
+            const times = [];
+            for (const line of lines) {
+                const parsed = parseTimeHMSS(line.trim());
+                if (parsed !== null) {
+                    times.push(parsed);
+                }
+            }
+
+            if (times.length < 3) {
+                alert('Не удалось распознать временные метки. Используйте формат HH:MM:SS');
+                return;
+            }
+
+            // Разбиваем на группы по 3 элемента
+            const groups = [];
+            for (let i = 0; i < times.length; i += 3) {
+                if (i + 2 < times.length) {
+                    groups.push([times[i], times[i + 1], times[i + 2]]);
+                }
+            }
+
+            if (groups.length === 0) {
+                alert('Недостаточно данных для формирования групп');
+                return;
+            }
+
+            // Вычисляем разницы для каждой группы
+            const diff12List = [];
+            const diff13List = [];
+
+            for (const group of groups) {
+                const [t1, t2, t3] = group;
+                
+                // Разница между 1 и 2 (абсолютная)
+                const diff12Seconds = Math.abs(t2 - t1);
+                const diff12Minutes = Math.round(diff12Seconds / 60);
+                diff12List.push(diff12Minutes);
+                
+                // Разница между 1 и 3 (абсолютная)
+                const diff13Seconds = Math.abs(t3 - t1);
+                const diff13Minutes = Math.round(diff13Seconds / 60);
+                diff13List.push(diff13Minutes);
+            }
+
+            // Вычисляем суммы
+            const sum12 = diff12List.reduce((a, b) => a + b, 0);
+            const sum13 = diff13List.reduce((a, b) => a + b, 0);
+
+            // Подсчитываем F06 (количество временных меток содержащих 'F06')
+            const f06Count = lines.filter(line => line.trim().includes('F06')).length;
+
+            // Отображаем результаты
+            document.getElementById('f06Count').textContent = f06Count;
+            document.getElementById('sum12').textContent = sum12;
+            document.getElementById('sum13').textContent = sum13;
+
+            // Отображаем результаты по группам
+            let groupResultsHtml = '<div style="display: grid; gap: 8px;">';
+            groups.forEach((group, index) => {
+                const t1 = formatTime(group[0]);
+                const t2 = formatTime(group[1]);
+                const t3 = formatTime(group[2]);
+                groupResultsHtml += `
+                    <div style="padding: 12px; background: var(--background); border-radius: 8px; border: 1px solid var(--border);">
+                        <div style="font-weight: 500; margin-bottom: 4px;">Группа ${index + 1}: ${t1} → ${t2} → ${t3}</div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            (1→2): ${diff12List[index]} мин | (1→3): ${diff13List[index]} мин
+                        </div>
+                    </div>
+                `;
+            });
+            groupResultsHtml += '</div>';
+            document.getElementById('groupResults').innerHTML = groupResultsHtml;
+
+            // Отображаем подробный расчёт для первых 3 групп
+            let detailedHtml = '';
+            const maxDetail = Math.min(3, groups.length);
+            for (let i = 0; i < maxDetail; i++) {
+                const group = groups[i];
+                const t1 = formatTime(group[0]);
+                const t2 = formatTime(group[1]);
+                const t3 = formatTime(group[2]);
+                
+                const diff12Seconds = Math.abs(group[1] - group[0]);
+                const diff12Minutes = Math.round(diff12Seconds / 60);
+                const diff13Seconds = Math.abs(group[2] - group[0]);
+                const diff13Minutes = Math.round(diff13Seconds / 60);
+                
+                detailedHtml += `
+                    <div style="padding: 16px; background: var(--background); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px;">
+                        <div style="font-weight: 600; margin-bottom: 12px;">Группа ${i + 1}</div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>Времена:</strong> ${t1} (1), ${t2} (2), ${t3} (3)
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>(1 → 2):</strong> |${group[1]} - ${group[0]}| = ${diff12Seconds} сек = ${diff12Minutes} мин
+                        </div>
+                        <div>
+                            <strong>(1 → 3):</strong> |${group[2]} - ${group[0]}| = ${diff13Seconds} сек = ${diff13Minutes} мин
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('detailedResults').innerHTML = detailedHtml;
+
+            document.getElementById('batchResults').classList.remove('hidden');
+        }
+
+        function calculatePairs() {
+            const input = document.getElementById('pairsInput').value;
+            
+            if (!input.trim()) {
+                alert('Пожалуйста, вставьте список временных меток');
+                return;
+            }
+
+            const lines = input.trim().split('\n').filter(line => line.trim());
+            
+            if (lines.length < 2) {
+                alert('Недостаточно данных. Нужно минимум 2 временные метки');
+                return;
+            }
+
+            // Парсим временные метки в секунды
+            const times = [];
+            for (const line of lines) {
+                const parsed = parseTimeHMSS(line.trim());
+                if (parsed !== null) {
+                    times.push(parsed);
+                }
+            }
+
+            if (times.length < 2) {
+                alert('Не удалось распознать временные метки. Используйте формат HH:MM:SS');
+                return;
+            }
+
+            // Разбиваем на пары
+            const pairs = [];
+            for (let i = 0; i < times.length - 1; i += 2) {
+                if (i + 1 < times.length) {
+                    pairs.push([times[i], times[i + 1]]);
+                }
+            }
+
+            if (pairs.length === 0) {
+                alert('Недостаточно данных для формирования пар');
+                return;
+            }
+
+            // Вычисляем разницы для каждой пары
+            const diffList = [];
+
+            for (const pair of pairs) {
+                const [t1, t2] = pair;
+                
+                // Определяем раннее и позднее время
+                const earlier = Math.min(t1, t2);
+                const later = Math.max(t1, t2);
+                
+                // Вычисляем разницу в секундах
+                const diffSeconds = later - earlier;
+                
+                // Переводим в минуты с учётом секунд как дробной части
+                const diffMinutes = diffSeconds / 60;
+                
+                // Округляем до ближайшего целого по математическим правилам
+                const rounded = Math.round(diffMinutes);
+                diffList.push(rounded);
+            }
+
+            // Вычисляем сумму
+            const sum = diffList.reduce((a, b) => a + b, 0);
+
+            // Подсчитываем F06
+            const f06Count = lines.filter(line => line.trim().includes('F06')).length;
+
+            // Отображаем результаты
+            document.getElementById('pairsF06Count').textContent = f06Count;
+            document.getElementById('pairsSum').textContent = sum;
+
+            // Отображаем результаты по парам
+            let groupResultsHtml = '<div style="display: grid; gap: 8px;">';
+            pairs.forEach((pair, index) => {
+                const t1 = formatTime(pair[0]);
+                const t2 = formatTime(pair[1]);
+                groupResultsHtml += `
+                    <div style="padding: 12px; background: var(--background); border-radius: 8px; border: 1px solid var(--border);">
+                        <div style="font-weight: 500; margin-bottom: 4px;">Пара ${index + 1}: ${t1} - ${t2}</div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            Разница: ${diffList[index]} мин
+                        </div>
+                    </div>
+                `;
+            });
+            groupResultsHtml += '</div>';
+            document.getElementById('pairsGroupResults').innerHTML = groupResultsHtml;
+
+            // Отображаем подробный расчёт для первых 3 пар
+            let detailedHtml = '';
+            const maxDetail = Math.min(3, pairs.length);
+            for (let i = 0; i < maxDetail; i++) {
+                const pair = pairs[i];
+                const t1 = formatTime(pair[0]);
+                const t2 = formatTime(pair[1]);
+                
+                const earlier = Math.min(pair[0], pair[1]);
+                const later = Math.max(pair[0], pair[1]);
+                const diffSeconds = later - earlier;
+                const diffMinutes = diffSeconds / 60;
+                const rounded = Math.round(diffMinutes);
+                
+                detailedHtml += `
+                    <div style="padding: 16px; background: var(--background); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px;">
+                        <div style="font-weight: 600; margin-bottom: 12px;">Пара ${i + 1}</div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>Времена:</strong> ${t1} (${pair[0] === earlier ? 'раннее' : 'позднее'}), ${t2} (${pair[1] === earlier ? 'раннее' : 'позднее'})
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>Разница:</strong> ${later} - ${earlier} = ${diffSeconds} сек
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>В минутах:</strong> ${diffSeconds} / 60 = ${diffMinutes.toFixed(2)} мин
+                        </div>
+                        <div>
+                            <strong>Округлённое значение:</strong> ${rounded} мин
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('pairsDetailedResults').innerHTML = detailedHtml;
+
+            document.getElementById('pairsResults').classList.remove('hidden');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            document.getElementById('quickTab').classList.add('hidden');
+            document.getElementById('batchTab').classList.add('hidden');
+            document.getElementById('pairsTab').classList.add('hidden');
+            document.getElementById('palletTab').classList.add('hidden');
+            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById('settingsTab').classList.add('hidden');
+
+            document.getElementById(tab + 'Tab').classList.remove('hidden');
+
+            // Сохраняем текущую вкладку
+            localStorage.setItem('currentTab', tab);
+        }
+
+        function clearAll() {
+            document.getElementById('quickTimeInput').value = '';
+            document.getElementById('quickResult').textContent = '0';
+            document.getElementById('timeInput').value = '';
+            document.getElementById('batchResults').classList.add('hidden');
+            document.getElementById('palletInput').value = '';
+            document.getElementById('palletResults').classList.add('hidden');
+        }
+
+        document.getElementById('timeInput').addEventListener('paste', () => {
+            setTimeout(calculateBatch, 100);
+        });
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setFontSize(size) {
+            document.documentElement.style.fontSize = size === 'small' ? '14px' : size === 'medium' ? '16px' : '18px';
+            localStorage.setItem('fontSize', size);
+        }
+
+        function loadFontSize() {
+            const savedSize = localStorage.getItem('fontSize') || 'medium';
+            document.getElementById('fontSizeSelector').value = savedSize;
+            setFontSize(savedSize);
+        }
+
+        function setAutoCalc(enabled) {
+            localStorage.setItem('autoCalc', enabled);
+        }
+
+        function loadAutoCalc() {
+            const saved = localStorage.getItem('autoCalc');
+            document.getElementById('autoCalcCheckbox').checked = saved === 'true';
+        }
+
+        function setShowHints(enabled) {
+            localStorage.setItem('showHints', enabled);
+        }
+
+        function loadShowHints() {
+            const saved = localStorage.getItem('showHints');
+            document.getElementById('showHintsCheckbox').checked = saved === 'true';
+        }
+
+        function setSaveHistory(enabled) {
+            localStorage.setItem('saveHistory', enabled);
+        }
+
+        function loadSaveHistory() {
+            const saved = localStorage.getItem('saveHistory');
+            document.getElementById('saveHistoryCheckbox').checked = saved === 'true';
+        }
+
+        function loadSettings() {
+            loadTheme();
+            loadFontSize();
+            loadAutoCalc();
+            loadShowHints();
+            loadSaveHistory();
+        }
+
+        function loadCurrentTab() {
+            const savedTab = localStorage.getItem('currentTab') || 'quick';
+            
+            // Находим соответствующий элемент навигации
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('onclick').includes(savedTab)) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Скрываем все вкладки
+            document.getElementById('quickTab').classList.add('hidden');
+            document.getElementById('batchTab').classList.add('hidden');
+            document.getElementById('pairsTab').classList.add('hidden');
+            document.getElementById('palletTab').classList.add('hidden');
+            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById('settingsTab').classList.add('hidden');
+
+            // Показываем сохранённую вкладку
+            document.getElementById(savedTab + 'Tab').classList.remove('hidden');
+        }
+
+        function analyzePallets() {
+            const input = document.getElementById('palletInput').value;
+            
+            if (!input.trim()) {
+                alert('Пожалуйста, вставьте список паллет');
+                return;
+            }
+
+            const lines = input.trim().split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0) {
+                alert('Не удалось распознать данные');
+                return;
+            }
+
+            const pallets = {};
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.length < 3) continue;
+                
+                // Извлекаем D1/D2 из конца строки
+                const type = trimmed.slice(-2);
+                const id = trimmed.slice(0, -2);
+                
+                if (!pallets[id]) {
+                    pallets[id] = { d1: false, d2: false };
+                }
+                
+                if (type === 'D1') pallets[id].d1 = true;
+                if (type === 'D2') pallets[id].d2 = true;
+            }
+
+            const paired = [];
+            const unpaired = [];
+
+            for (const id in pallets) {
+                const pallet = pallets[id];
+                if (pallet.d1 && pallet.d2) {
+                    paired.push({ id, d1: true, d2: true });
+                } else if (pallet.d1 && !pallet.d2) {
+                    unpaired.push({ id, missing: 'D2' });
+                } else if (!pallet.d1 && pallet.d2) {
+                    unpaired.push({ id, missing: 'D1' });
+                }
+            }
+
+            const pairedRows = paired.length * 2;
+            const unpairedRows = unpaired.length;
+            const totalRows = pairedRows + unpairedRows;
+
+            let output = '';
+            
+            if (paired.length > 0) {
+                output += 'Парные паллеты:\n';
+                for (const p of paired) {
+                    output += `${p.id} — D1, D2\n`;
+                }
+                output += '\n';
+            }
+
+            if (unpaired.length > 0) {
+                output += 'Непарные паллеты:\n';
+                for (const p of unpaired) {
+                    output += `${p.id} — отсутствует ${p.missing}\n`;
+                }
+                output += '\n';
+            }
+
+            output += `Парные\t${pairedRows}\n`;
+            output += `Не парные\t${unpairedRows}\n`;
+            output += `Общий кол палет\t${totalRows}`;
+
+            document.getElementById('pairedCount').textContent = paired.length;
+            document.getElementById('unpairedCount').textContent = unpaired.length;
+            document.getElementById('totalCount').textContent = totalRows;
+            document.getElementById('palletOutput').textContent = output;
+
+            document.getElementById('palletResults').classList.remove('hidden');
+        }
+
+        // Загрузка настроек при запуске
+        loadSettings();
+        loadCurrentTab();
+    </script>
+</body>
+</html>
