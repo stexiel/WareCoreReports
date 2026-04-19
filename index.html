@@ -6,6 +6,8 @@
     <title>WareCore Reports</title>
     <link rel="icon" href="Снимок_экрана_2026-04-19_043623-removebg-preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -755,6 +757,16 @@
                     </svg>
                     Анализ паллет
                 </div>
+                <div class="nav-item" onclick="switchTab('excel')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <path d="M8 13h8"/>
+                        <path d="M8 17h8"/>
+                        <path d="M8 9h2"/>
+                    </svg>
+                    Генератор Excel
+                </div>
             </div>
 
             <div class="nav-section">
@@ -805,14 +817,22 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Времена (начальное и конечное через табуляцию)</label>
-                    <textarea id="quickTimeInput" class="form-input" placeholder="16:56	19:30" rows="2" style="min-height: 60px;"></textarea>
+                    <label class="form-label">Времена (каждая пара на новой строке через табуляцию или пробел)</label>
+                    <textarea id="quickTimeInput" class="form-input" placeholder="20:21&#9;23:41&#10;21:30&#9;00:15&#10;22:42&#9;00:45" rows="5" style="min-height: 100px;"></textarea>
                 </div>
 
-                <div class="result-display">
-                    <div class="result-label">Разница в минутах</div>
-                    <div class="result-value" id="quickResult">0</div>
-                    <div class="result-unit">МИНУТ</div>
+                <div id="quickResultTable" style="display:none; margin-top: 12px;">
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead>
+                            <tr style="background:var(--border);">
+                                <th style="padding:8px; border:1px solid var(--border); text-align:center;">Начало</th>
+                                <th style="padding:8px; border:1px solid var(--border); text-align:center;">Конец</th>
+                                <th style="padding:8px; border:1px solid var(--border); text-align:center;">Разница (мин)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quickResultBody"></tbody>
+                    </table>
+                    <div style="margin-top:10px; font-size:14px; font-weight:600;">Итого: <span id="quickResult">0</span> мин</div>
                 </div>
             </div>
         </div>
@@ -980,6 +1000,74 @@
             </div>
         </div>
 
+        <div id="excelTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Генератор Excel</h2>
+                        <p class="card-subtitle">Создание таблицы штабелеров с датой, временем и статусами</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateExcel()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Скачать Excel
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Данные (вставьте из отчёта)</label>
+                    <textarea id="excelInput" class="form-input" placeholder="SC0401	Conveyor	1006940137864695808	ScFault1	DH01	超边报警	2026.04.18 21:22:37	2026.04.18 21:47:44"></textarea>
+                </div>
+
+                <input type="hidden" id="excelVOshibke" value="">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">ВОТС (мин)</label>
+                        <input type="number" id="excelVOTS" class="form-input" placeholder="225">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Название файла</label>
+                        <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Инженер WCS</label>
+                        <input type="text" id="excelInzhener" class="form-input" placeholder="Aser">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Тех служба</label>
+                        <input type="text" id="excelTex" class="form-input" placeholder="Лёша, Владимир, Ержан">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="parseExcelData()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Парсить данные
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearExcelData()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Очистить
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Добавленные строки</h2>
+                    </div>
+                    <div id="excelPreview" style="overflow-x: auto;"></div>
+                </div>
+            </div>
+        </div>
+
         <div id="settingsTab" class="hidden">
             <div class="card">
                 <div class="card-header">
@@ -1060,27 +1148,45 @@
 
         function quickCalculate() {
             const input = document.getElementById('quickTimeInput').value;
-            const parts = input.trim().split(/[\n\t\s]+/).filter(p => p.trim());
-            
-            if (parts.length < 2) {
-                document.getElementById('quickResult').textContent = '—';
+            const lines = input.trim().split('\n').filter(l => l.trim());
+
+            if (lines.length === 0) {
+                document.getElementById('quickResultTable').style.display = 'none';
                 return;
             }
-            
-            const start = parseTimeHM(parts[0]);
-            const end = parseTimeHM(parts[1]);
-            
-            if (start === null || end === null) {
-                document.getElementById('quickResult').textContent = '—';
+
+            let totalDiff = 0;
+            let rows = '';
+            let hasAny = false;
+
+            for (const line of lines) {
+                const parts = line.trim().split(/[\t\s]+/).filter(p => p.trim());
+                if (parts.length < 2) continue;
+
+                const start = parseTimeHM(parts[0]);
+                const end = parseTimeHM(parts[1]);
+                if (start === null || end === null) continue;
+
+                let diff = end - start;
+                if (diff < 0) diff += 24 * 60;
+
+                totalDiff += diff;
+                hasAny = true;
+                rows += `<tr>
+                    <td style="padding:8px; border:1px solid var(--border); text-align:center;">${parts[0]}</td>
+                    <td style="padding:8px; border:1px solid var(--border); text-align:center;">${parts[1]}</td>
+                    <td style="padding:8px; border:1px solid var(--border); text-align:center; font-weight:600;">${diff}</td>
+                </tr>`;
+            }
+
+            if (!hasAny) {
+                document.getElementById('quickResultTable').style.display = 'none';
                 return;
             }
-            
-            let diff = end - start;
-            if (diff < 0) {
-                diff += 24 * 60;
-            }
-            
-            document.getElementById('quickResult').textContent = diff;
+
+            document.getElementById('quickResultBody').innerHTML = rows;
+            document.getElementById('quickResult').textContent = totalDiff;
+            document.getElementById('quickResultTable').style.display = 'block';
         }
 
         document.getElementById('quickTimeInput').addEventListener('input', quickCalculate);
@@ -1384,6 +1490,7 @@
             document.getElementById('batchTab').classList.add('hidden');
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
+            document.getElementById('excelTab').classList.add('hidden');
             document.getElementById('historyTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
 
@@ -1479,6 +1586,7 @@
             document.getElementById('batchTab').classList.add('hidden');
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
+            document.getElementById('excelTab').classList.add('hidden');
             document.getElementById('historyTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
 
@@ -1565,6 +1673,333 @@
             document.getElementById('palletOutput').textContent = output;
 
             document.getElementById('palletResults').classList.remove('hidden');
+        }
+
+        let excelData = [];
+
+        function parseExcelData() {
+            const input = document.getElementById('excelInput').value.trim();
+            
+            if (!input) {
+                alert('Пожалуйста, вставьте данные');
+                return;
+            }
+
+            const lines = input.split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0) {
+                alert('Нет данных для обработки');
+                return;
+            }
+
+            excelData = [];
+            const equipmentToStacker = {
+                'SC0101': 1,
+                'SC0201': 2,
+                'SC0301': 3,
+                'SC0401': 4,
+                'SC0501': 5,
+                'SC0601': 6,
+                'SC0701': 7,
+                'SC0801': 8,
+                'SC0901': 9,
+                'SC1001': 10
+            };
+
+            // Парсим каждую строку
+            const parsedRows = [];
+            for (const line of lines) {
+                const parts = line.trim().split(/\t/);
+                if (parts.length < 2) continue;
+
+                const equipmentId = parts[0].trim();
+
+                // Ищем все даты в формате YYYY.MM.DD HH:MM:SS
+                const dateMatches = line.match(/\d{4}\.\d{2}\.\d{2} \d{2}:\d{2}:\d{2}/g);
+                if (!dateMatches || dateMatches.length < 2) continue;
+
+                const startTime = dateMatches[0].split(' ')[1].trim();
+                const endTime = dateMatches[1].split(' ')[1].trim();
+
+                // Определяем номер штабелера
+                const stackerNum = equipmentToStacker[equipmentId] || null;
+                if (!stackerNum) continue;
+
+                parsedRows.push({
+                    startTime: startTime,
+                    endTime: endTime,
+                    stacker: stackerNum
+                });
+            }
+
+            if (parsedRows.length === 0) {
+                alert('Не удалось распознать данные. Проверьте что данные разделены табуляцией');
+                return;
+            }
+
+            // Каждая строка - отдельное событие (F06 → тех → готов к работе)
+            excelData = parsedRows.map(row => ({
+                time: row.startTime,
+                endTime: row.endTime,
+                stacker: row.stacker,
+                statuses: Array(10).fill('').map((_, i) => i + 1 === row.stacker ? 'F06' : '')
+            }));
+
+            // Сортируем по времени
+            excelData.sort((a, b) => a.time.localeCompare(b.time));
+
+            // Автоматически считаем "В ошибке" - сумма разниц времени по всем событиям
+            let totalErrorMinutes = 0;
+            for (const row of parsedRows) {
+                if (row.startTime && row.endTime) {
+                    const toSec = t => {
+                        const p = t.split(':');
+                        return parseInt(p[0]) * 3600 + parseInt(p[1]) * 60 + parseInt(p[2]);
+                    };
+                    let diff = toSec(row.endTime) - toSec(row.startTime);
+                    if (diff < 0) diff += 24 * 3600;
+                    totalErrorMinutes += Math.round(diff / 60);
+                }
+            }
+            document.getElementById('excelVOshibke').value = totalErrorMinutes + ' мин';
+
+            updateExcelPreview();
+        }
+
+        function clearExcelData() {
+            excelData = [];
+            updateExcelPreview();
+        }
+
+        function updateExcelPreview() {
+            const preview = document.getElementById('excelPreview');
+            
+            if (excelData.length === 0) {
+                preview.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Нет добавленных строк</p>';
+                return;
+            }
+
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+            html += '<thead><tr style="background: var(--border);">';
+            html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Дата</th>';
+            html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Время</th>';
+            for (let i = 1; i <= 10; i++) {
+                html += `<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">${i}-штабелер</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            excelData.forEach(row => {
+                html += '<tr>';
+                html += `<td style="padding: 8px; border: 1px solid var(--border);">${row.date}</td>`;
+                html += `<td style="padding: 8px; border: 1px solid var(--border);">${row.time}</td>`;
+                row.statuses.forEach(status => {
+                    html += `<td style="padding: 8px; border: 1px solid var(--border);">${status}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            preview.innerHTML = html;
+        }
+
+        async function generateExcel() {
+            if (excelData.length === 0) {
+                alert('Нет данных для генерации Excel файла');
+                return;
+            }
+
+            const vOshibke = document.getElementById('excelVOshibke').value || '';
+            const vOTS = document.getElementById('excelVOTS').value || '';
+            const inzhener = document.getElementById('excelInzhener').value || '';
+            const tex = document.getElementById('excelTex').value || '';
+            const fileName = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
+
+            const workbook = new ExcelJS.Workbook();
+            const ws = workbook.addWorksheet('Отчёт');
+
+            // Цвета строго по требованиям
+            const GREY_HEADER = 'FFFFCCCC'; // светло-розовый для заголовков
+            const GREY_BG = 'FFBFBFBF';    // тёмный серый #BFBFBF для пустых ячеек
+            const RED = 'FFFF0000';         // #FF0000 ярко-красный F06
+            const YELLOW = 'FFFFFF00';      // #FFFF00 ярко-жёлтый тех
+            const GREEN = 'FF92D050';       // #92D050 производственный зелёный
+            const CYAN = 'FF00FFFF';        // #00FFFF голубой ВОТС
+            const WHITE = 'FFFFFFFF';
+            const BLACK = 'FF000000';
+            // Цвета текста для колонки Время
+            const TIME_RED = 'FFFF0000';
+            const TIME_GREEN = 'FF00B050';
+            const TIME_BLUE = 'FF0070C0';
+
+            // Ширина колонок
+            ws.columns = [
+                { key: 'time', width: 12 },
+                { key: 's1', width: 14 },
+                { key: 's2', width: 14 },
+                { key: 's3', width: 14 },
+                { key: 's4', width: 14 },
+                { key: 's5', width: 14 },
+                { key: 's6', width: 14 },
+                { key: 's7', width: 14 },
+                { key: 's8', width: 14 },
+                { key: 's9', width: 14 },
+                { key: 's10', width: 14 },
+            ];
+
+            // Функция стиля ячейки — строго чёрный текст, без отклонений
+            const cellStyle = (bgColor, bold = false) => ({
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } },
+                font: { name: 'Arial', size: 8, bold: bold, color: { argb: BLACK } },
+                alignment: { horizontal: 'center', vertical: 'middle', wrapText: false },
+                border: {
+                    top: { style: 'thin', color: { argb: 'FF000000' } },
+                    bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                    left: { style: 'thin', color: { argb: 'FF000000' } },
+                    right: { style: 'thin', color: { argb: 'FF000000' } }
+                }
+            });
+
+            // Заголовки — серый фон, чёрный жирный текст, по центру
+            const headers = ['Время', '1-штабелер', '2-штабелер', '3-штабелер', '4-штабелер', '5-штабелер', '6-штабелер', '7-штабелер', '8-штабелер', '9-штабелер', '10-штабелер'];
+            const headerRow = ws.addRow(headers);
+            headerRow.eachCell((cell) => {
+                cell.style = cellStyle(GREY_HEADER, true);
+            });
+            headerRow.height = 15;
+
+            // Функция статуса → цвет
+            function statusColor(status) {
+                if (status === 'F06') return RED;
+                if (status === 'тех') return YELLOW;
+                if (status === 'готов к работе') return GREEN;
+                return GREY_BG;
+            }
+
+            // Функция статуса → текст
+            function statusText(status) {
+                if (status === 'F06') return 'F06';
+                if (status === 'тех') return 'тех';
+                if (status === 'готов к работе') return 'готов к работе';
+                return '';
+            }
+
+            // Проходим по событиям - каждое событие F06 создаёт 3 строки: F06, тех, готов к работе
+            for (let i = 0; i < excelData.length; i++) {
+                const row = excelData[i];
+
+                // Пустая строка-разделитель перед каждым событием (кроме первого)
+                if (i > 0) {
+                    const emptyRow = ws.addRow(['', ...Array(10).fill('')]);
+                    emptyRow.height = 15;
+                    emptyRow.eachCell(cell => { cell.style = cellStyle(GREY_BG); });
+                }
+
+                // Строка F06 — фон серый, текст времени КРАСНЫЙ; ячейки F06 красные
+                const f06Row = ws.addRow([row.time, ...row.statuses.map(s => s === 'F06' ? 'F06' : '')]);
+                f06Row.height = 15;
+                f06Row.getCell(1).style = {
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
+                    font: { name: 'Arial', size: 8, bold: true, color: { argb: TIME_RED } },
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                };
+                row.statuses.forEach((status, idx) => {
+                    const cell = f06Row.getCell(idx + 2);
+                    cell.style = cellStyle(status === 'F06' ? RED : GREY_BG, status === 'F06');
+                });
+
+                // Строка тех — фон серый, текст времени СИНИЙ; ячейки тех жёлтые
+                const texRow = ws.addRow(['', ...row.statuses.map(s => s === 'F06' ? 'тех' : '')]);
+                texRow.height = 15;
+                texRow.getCell(1).style = {
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
+                    font: { name: 'Arial', size: 8, color: { argb: TIME_BLUE } },
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                };
+                row.statuses.forEach((status, idx) => {
+                    const cell = texRow.getCell(idx + 2);
+                    cell.style = cellStyle(status === 'F06' ? YELLOW : GREY_BG);
+                });
+
+                // Строка готов к работе — фон серый, текст времени ЗЕЛЁНЫЙ; ячейки зелёные
+                const readyRow = ws.addRow([row.endTime || '', ...row.statuses.map(s => s === 'F06' ? 'готов к работе' : '')]);
+                readyRow.height = 15;
+                readyRow.getCell(1).style = {
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
+                    font: { name: 'Arial', size: 8, color: { argb: TIME_GREEN } },
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                };
+                row.statuses.forEach((status, idx) => {
+                    const cell = readyRow.getCell(idx + 2);
+                    cell.style = cellStyle(status === 'F06' ? GREEN : GREY_BG);
+                });
+            }
+
+            // Легенда справа (начиная с колонки 13)
+            const legendStartCol = 13;
+            const legendData = [
+                { color: RED,    text: 'F06',            desc: 'Код ошибки' },
+                { color: YELLOW, text: 'тех',            desc: 'Время захода техслужбы для устранения ошибки.' },
+                { color: GREEN,  text: 'готов к работе', desc: 'Время снятия ошибки со штабелера.' },
+                { color: CYAN,   text: 'ВОТС',           desc: 'Время ожидания технической службы.' },
+                { color: RED,    text: 'В ошибке',       desc: 'время простоя штабелера по причине ошибки.' },
+            ];
+
+            legendData.forEach((item, idx) => {
+                const rowNum = idx + 2;
+                const wsRow = ws.getRow(rowNum);
+
+                const labelCell = wsRow.getCell(legendStartCol);
+                labelCell.value = item.text;
+                labelCell.style = {
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: item.color } },
+                    font: { name: 'Arial', size: 8, bold: true, color: { argb: BLACK } },
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                };
+
+                const descCell = wsRow.getCell(legendStartCol + 1);
+                descCell.value = item.desc;
+                descCell.style = {
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
+                    font: { name: 'Arial', size: 8, color: { argb: BLACK } },
+                    alignment: { horizontal: 'left', vertical: 'middle', wrapText: false },
+                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                };
+
+                ws.getColumn(legendStartCol).width = 16;
+                ws.getColumn(legendStartCol + 1).width = 46;
+            });
+
+            // Пустая строка
+            ws.addRow([]);
+
+            // Итоги
+            const totals = [
+                ['В ошибке', `${vOshibke} минут`],
+                ['ВОТС', `${vOTS} минут`],
+                ['Инженер WCS', inzhener],
+                ['Тех служба', tex],
+            ];
+
+            totals.forEach(([label, value]) => {
+                const r = ws.addRow([label, value]);
+                r.height = 15;
+                r.getCell(1).style = cellStyle(GREY_HEADER, true);
+                r.getCell(2).style = cellStyle(WHITE);
+            });
+
+            // Скачиваем
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // Загрузка настроек при запуске
