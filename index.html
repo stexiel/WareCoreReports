@@ -1007,48 +1007,79 @@
                         <h2 class="card-title">Генератор Excel отчётов</h2>
                         <p class="card-subtitle">Заполните данные и скачайте нужные файлы</p>
                     </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-primary" onclick="generateExcel()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Скачать Excel
+                        </button>
+                    </div>
                 </div>
 
-                <!-- ===== БЛОК 1: ОБЩИЕ ДАННЫЕ ===== -->
-                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px;">
-                    <h3 style="font-size:14px; font-weight:700; margin:0 0 12px 0; color:var(--text-primary);">Общие данные смены</h3>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <!-- ══════════════════════════════════════════ -->
+                <!-- СЕКЦИЯ 1 — ОБЩИЕ ДАННЫЕ                  -->
+                <!-- ══════════════════════════════════════════ -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                        <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
+                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Общие данные</h3>
+                        <span style="font-size:11px; color:var(--text-secondary); margin-left:4px;">используются в обоих файлах</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
                         <div class="form-group" style="margin:0">
                             <label class="form-label">Инженер WCS</label>
                             <input type="text" id="excelInzhener" class="form-input" placeholder="Aser">
                         </div>
                         <div class="form-group" style="margin:0">
                             <label class="form-label">Тех служба</label>
-                            <input type="text" id="excelTex" class="form-input" placeholder="Лёша, Владимир, Ержан">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== БЛОК 2: ДАННЫЕ ПО ОШИБКАМ (таблица 1) ===== -->
-                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px;">
-                    <h3 style="font-size:14px; font-weight:700; margin:0 0 12px 0; color:var(--text-primary);">Отчёт по ошибкам штабелеров</h3>
-
-                    <div class="form-group">
-                        <label class="form-label">Данные из отчёта (вставьте сырые строки)</label>
-                        <textarea id="excelInput" class="form-input" rows="4" placeholder="SC0401	Conveyor	1006940137864695808	ScFault1	DH01	超边报警	2026.04.18 21:22:37	2026.04.18 21:47:44"></textarea>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
-                        <div class="form-group" style="margin:0">
-                            <label class="form-label">Количество ошибок <span style="color:var(--text-secondary);font-size:10px;">(авто)</span></label>
-                            <input type="number" id="shiftErrCount" class="form-input" placeholder="авто">
-                        </div>
-                        <div class="form-group" style="margin:0">
-                            <label class="form-label">Время в ошибке (мин) <span style="color:var(--text-secondary);font-size:10px;">(авто)</span></label>
-                            <input type="number" id="shiftErrTime" class="form-input" placeholder="авто">
+                            <input type="text" id="excelTex" class="form-input" placeholder="Лёша, Владимир">
                         </div>
                         <div class="form-group" style="margin:0">
                             <label class="form-label">ВОТС (мин)</label>
                             <input type="number" id="shiftVOTS" class="form-input" placeholder="69">
                         </div>
                     </div>
+                </div>
 
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+                <!-- ══════════════════════════════════════════ -->
+                <!-- СЕКЦИЯ 2 — ОТЧЁТ ПО ОШИБКАМ              -->
+                <!-- ══════════════════════════════════════════ -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:4px; height:18px; background:#ef4444; border-radius:2px;"></div>
+                            <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Отчёт по ошибкам штабелеров</h3>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:11px; color:var(--text-secondary);">Файл:</span>
+                            <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report" style="width:160px; padding:5px 10px; font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Данные из отчёта (вставьте сырые строки)</label>
+                        <textarea id="excelInput" class="form-input" rows="4" placeholder="SC0401	Conveyor	1006940137864695808	ScFault1	DH01	超边报警	2026.04.18 21:22:37	2026.04.18 21:47:44"></textarea>
+                    </div>
+
+                    <!-- Авто-статистика (только отображение) -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px;">
+                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Количество ошибок</div>
+                            <div id="statErrCount" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
+                            <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">авто из данных</div>
+                        </div>
+                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Время в ошибке</div>
+                            <div id="statErrTime" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
+                            <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">мин · авто</div>
+                        </div>
+                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Событий найдено</div>
+                            <div id="statEvents" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
+                            <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">строк</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <button class="btn btn-secondary" onclick="parseExcelData()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                             Парсить данные
@@ -1057,73 +1088,87 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             Очистить
                         </button>
-                        <span id="autoCalcInfo" style="font-size:12px; color:var(--text-secondary);"></span>
                     </div>
 
-                    <div id="excelPreview" style="overflow-x:auto;"></div>
-
-                    <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end; margin-top:12px;">
-                        <div class="form-group" style="margin:0">
-                            <label class="form-label">Название файла (отчёт по ошибкам)</label>
-                            <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report">
-                        </div>
-                        <button class="btn btn-primary" onclick="generateExcel()" style="white-space:nowrap;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Скачать — Ошибки
-                        </button>
-                    </div>
+                    <div id="excelPreview" style="overflow-x:auto; margin-top:12px;"></div>
                 </div>
 
-                <!-- ===== БЛОК 3: ОТЧЁТ СМЕНЫ (таблица 2) ===== -->
-                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px;">
-                    <h3 style="font-size:14px; font-weight:700; margin:0 0 12px 0; color:var(--text-primary);">Отчёт смены (Отгрузка / Приемка / Паллеты)</h3>
+                <!-- ══════════════════════════════════════════ -->
+                <!-- СЕКЦИЯ 3 — ОТЧЁТ СМЕНЫ (ДАШБОРД)         -->
+                <!-- ══════════════════════════════════════════ -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:4px; height:18px; background:#22c55e; border-radius:2px;"></div>
+                            <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Отчёт смены (Дашборд)</h3>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:11px; color:var(--text-secondary);">Файл:</span>
+                            <input type="text" id="shiftFileName" class="form-input" placeholder="shift_report" style="width:160px; padding:5px 10px; font-size:12px;">
+                            <button class="btn btn-primary" onclick="generateShiftReport()" style="white-space:nowrap; padding:6px 14px; font-size:13px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Скачать
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- ОТГРУЗКА -->
                     <div style="margin-bottom:16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                            <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin:0;">Отгрузка</h4>
-                            <button class="btn btn-secondary" style="padding:3px 10px; font-size:12px;" onclick="addShipmentRow()">+ Добавить</button>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Отгрузка</span>
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="addShipmentRow()">+ Добавить</button>
                         </div>
                         <div id="shipmentRows"></div>
                     </div>
 
+                    <div style="height:1px; background:var(--border); margin:16px 0;"></div>
+
                     <!-- ПРИЕМКА -->
                     <div style="margin-bottom:16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                            <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin:0;">Приемка</h4>
-                            <button class="btn btn-secondary" style="padding:3px 10px; font-size:12px;" onclick="addReceiptRow()">+ Добавить</button>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Приемка</span>
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="addReceiptRow()">+ Добавить</button>
                         </div>
                         <div id="receiptRows"></div>
                     </div>
 
-                    <!-- ПАЛЛЕТЫ -->
-                    <div style="margin-bottom:16px;">
-                        <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Парные / Непарные паллеты</h4>
-                        <div class="form-group">
-                            <label class="form-label">Список паллет (ID\tD1 или ID\tD2) — такой же формат как в «Анализе паллет»</label>
-                            <textarea id="shiftPalletsInput" class="form-input" rows="5" placeholder="Вставьте список паллет&#10;&#10;L01X01Y73Z01D1&#10;L01X01Y73Z01D2&#10;L02X02Y74Z01D1&#10;..."></textarea>
-                        </div>
-                        <div id="shiftPalletsResult" style="display:none; margin-top:8px; font-size:13px; padding:10px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
-                            <div>Парные: <strong id="shiftPaired">0</strong> — <strong id="shiftPairedPct">0%</strong></div>
-                            <div>Не парные: <strong id="shiftUnpaired">0</strong> — <strong id="shiftUnpairedPct">0%</strong></div>
-                            <div>Общий кол паллет: <strong id="shiftTotal">0</strong></div>
-                        </div>
-                        <button class="btn btn-secondary" style="margin-top:8px;" onclick="calcShiftPallets()">Рассчитать паллеты</button>
-                    </div>
+                    <div style="height:1px; background:var(--border); margin:16px 0;"></div>
 
-                    <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end; margin-top:12px;">
-                        <div class="form-group" style="margin:0">
-                            <label class="form-label">Название файла (отчёт смены)</label>
-                            <input type="text" id="shiftFileName" class="form-input" placeholder="shift_report">
+                    <!-- ПАЛЛЕТЫ -->
+                    <div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Паллеты</span>
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="calcShiftPallets()">Рассчитать</button>
                         </div>
-                        <button class="btn btn-primary" onclick="generateShiftReport()" style="white-space:nowrap;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Скачать — Дашборд
-                        </button>
+                        <div class="form-group">
+                            <label class="form-label">Список паллет (ID\tD1 или ID\tD2)</label>
+                            <textarea id="shiftPalletsInput" class="form-input" rows="4" placeholder="L01X01Y73Z01D1&#10;L01X01Y73Z01D2&#10;L02X02Y74Z01D1&#10;..."></textarea>
+                        </div>
+                        <div id="shiftPalletsResult" style="display:none; margin-top:10px;">
+                            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+                                <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                                    <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Парные</div>
+                                    <div style="font-size:20px; font-weight:700; color:#22c55e;"><span id="shiftPaired">0</span></div>
+                                    <div style="font-size:11px; color:var(--text-secondary);"><span id="shiftPairedPct">0%</span></div>
+                                </div>
+                                <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                                    <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Непарные</div>
+                                    <div style="font-size:20px; font-weight:700; color:#ef4444;"><span id="shiftUnpaired">0</span></div>
+                                    <div style="font-size:11px; color:var(--text-secondary);"><span id="shiftUnpairedPct">0%</span></div>
+                                </div>
+                                <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                                    <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Всего</div>
+                                    <div style="font-size:20px; font-weight:700; color:var(--text-primary);"><span id="shiftTotal">0</span></div>
+                                    <div style="font-size:11px; color:var(--text-secondary);">паллет</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <input type="hidden" id="excelVOshibke" value="">
+                <input type="hidden" id="shiftErrCount" value="">
+                <input type="hidden" id="shiftErrTime" value="">
             </div>
         </div>
 
@@ -1780,17 +1825,29 @@
                 const dateMatches = line.match(/\d{4}\.\d{2}\.\d{2} \d{2}:\d{2}:\d{2}/g);
                 if (!dateMatches || dateMatches.length < 2) continue;
 
-                const startTime = dateMatches[0].split(' ')[1].trim();
-                const endTime = dateMatches[1].split(' ')[1].trim();
+                const startDateStr = dateMatches[0].trim(); // "YYYY.MM.DD HH:MM:SS"
+                const endDateStr   = dateMatches[1].trim();
+                const startTime = startDateStr.split(' ')[1]; // HH:MM:SS
+                const endTime   = endDateStr.split(' ')[1];
+
+                // ISO строка для сортировки по реальной дате (учёт перехода через полночь)
+                const startISO = startDateStr.replace(/\./g, '-').replace(' ', 'T');
+
+                // Форматируем отображаемое время: HH:MM:SS
+                const displayTime = startTime;
+                const displayEnd  = endTime;
 
                 // Определяем номер штабелера
                 const stackerNum = equipmentToStacker[equipmentId] || null;
                 if (!stackerNum) continue;
 
                 parsedRows.push({
-                    startTime: startTime,
-                    endTime: endTime,
-                    stacker: stackerNum
+                    startTime:   displayTime,
+                    endTime:     displayEnd,
+                    startISO:    startISO,
+                    rawStart:    startTime,
+                    rawEnd:      endTime,
+                    stacker:     stackerNum
                 });
             }
 
@@ -1799,37 +1856,42 @@
                 return;
             }
 
-            // Каждая строка - отдельное событие (F06 → тех → готов к работе)
+            // Строим excelData
             excelData = parsedRows.map(row => ({
-                time: row.startTime,
-                endTime: row.endTime,
-                stacker: row.stacker,
-                statuses: Array(10).fill('').map((_, i) => i + 1 === row.stacker ? 'F06' : '')
+                time:      row.startTime,
+                endTime:   row.endTime,
+                startISO:  row.startISO,
+                stacker:   row.stacker,
+                statuses:  Array(10).fill('').map((_, i) => i + 1 === row.stacker ? 'F06' : '')
             }));
 
-            // Сортируем по времени
-            excelData.sort((a, b) => a.time.localeCompare(b.time));
+            // Сортируем по реальной дате+времени — правильно обрабатывает переход через полночь
+            // Ночная смена 20:00→08:00: события 00:xx идут ПОСЛЕ 23:xx благодаря полной дате ISO
+            excelData.sort((a, b) => new Date(a.startISO).getTime() - new Date(b.startISO).getTime());
 
-            // Автоматически считаем "В ошибке" - сумма разниц времени по всем событиям
+            // Автоматически считаем "В ошибке" — сумма разниц времени
             let totalErrorMinutes = 0;
             for (const row of parsedRows) {
-                if (row.startTime && row.endTime) {
-                    const toSec = t => {
-                        const p = t.split(':');
-                        return parseInt(p[0]) * 3600 + parseInt(p[1]) * 60 + parseInt(p[2]);
-                    };
-                    let diff = toSec(row.endTime) - toSec(row.startTime);
-                    if (diff < 0) diff += 24 * 3600;
-                    totalErrorMinutes += Math.round(diff / 60);
-                }
+                const toSec = t => {
+                    const p = t.split(':');
+                    return parseInt(p[0]) * 3600 + parseInt(p[1]) * 60 + parseInt(p[2]);
+                };
+                let diff = toSec(row.rawEnd) - toSec(row.rawStart);
+                if (diff < 0) diff += 24 * 3600;
+                totalErrorMinutes += Math.round(diff / 60);
             }
-            document.getElementById('excelVOshibke').value = totalErrorMinutes + ' мин';
+            document.getElementById('excelVOshibke').value = totalErrorMinutes;
 
-            // Авторасчёт для дашборда: кол-во ошибок и время
+            // Обновляем стат-карточки (read-only)
+            document.getElementById('statErrCount').textContent = parsedRows.length;
+            document.getElementById('statErrTime').textContent  = totalErrorMinutes;
+            document.getElementById('statEvents').textContent   = excelData.length;
+
+            // Сохраняем в hidden поля для дашборда
             document.getElementById('shiftErrCount').value = parsedRows.length;
-            document.getElementById('shiftErrTime').value = totalErrorMinutes;
-            document.getElementById('autoCalcInfo').textContent =
-                `Авто: ${parsedRows.length} ошибок, ${totalErrorMinutes} мин общего времени`;
+            document.getElementById('shiftErrTime').value  = totalErrorMinutes;
+            localStorage.setItem('field_shiftErrCount', parsedRows.length);
+            localStorage.setItem('field_shiftErrTime',  totalErrorMinutes);
 
             updateExcelPreview();
         }
@@ -1837,6 +1899,12 @@
         function clearExcelData() {
             excelData = [];
             document.getElementById('excelInput').value = '';
+            document.getElementById('statErrCount').textContent = '—';
+            document.getElementById('statErrTime').textContent = '—';
+            document.getElementById('statEvents').textContent = '—';
+            document.getElementById('shiftErrCount').value = '';
+            document.getElementById('shiftErrTime').value = '';
+            document.getElementById('excelVOshibke').value = '';
             localStorage.removeItem('field_excelInput');
             localStorage.removeItem('excelData');
             updateExcelPreview();
@@ -1880,7 +1948,7 @@
             }
 
             const vOshibke = document.getElementById('excelVOshibke').value || '';
-            const vOTS = document.getElementById('excelVOTS').value || '';
+            const vOTS = document.getElementById('shiftVOTS').value || '';
             const inzhener = document.getElementById('excelInzhener').value || '';
             const tex = document.getElementById('excelTex').value || '';
             const fileName = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
@@ -2317,8 +2385,7 @@
         const PERSIST_IDS = [
             'quickTimeInput', 'timeInput', 'palletInput', 'excelInput',
             'excelFileName', 'shiftFileName', 'excelInzhener', 'excelTex',
-            'shiftErrCount', 'shiftErrTime', 'shiftVOTS',
-            'shiftPalletsInput'
+            'shiftVOTS', 'shiftPalletsInput'
         ];
 
         function saveField(id) {
@@ -2342,6 +2409,12 @@
                 if (saved) {
                     excelData = JSON.parse(saved);
                     updateExcelPreview();
+                    // Восстанавливаем стат-карточки
+                    const errCount = localStorage.getItem('field_shiftErrCount') || '';
+                    const errTime  = localStorage.getItem('field_shiftErrTime') || '';
+                    if (errCount) document.getElementById('statErrCount').textContent = errCount;
+                    if (errTime)  document.getElementById('statErrTime').textContent  = errTime;
+                    if (excelData.length) document.getElementById('statEvents').textContent = excelData.length;
                 }
             } catch(e) {}
         }
