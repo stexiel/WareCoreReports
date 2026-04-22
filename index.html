@@ -1080,15 +1080,11 @@
 
                     <div id="excelPreview" style="overflow-x:auto; margin-top:12px;"></div>
 
-                    <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+                    <div style="margin-top:12px;">
                         <div class="form-group" style="margin:0">
-                            <label class="form-label">Название файла</label>
+                            <label class="form-label">Название файла (ошибки)</label>
                             <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report">
                         </div>
-                        <button class="btn btn-primary" onclick="generateExcel()" style="white-space:nowrap; height:42px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Скачать — Ошибки
-                        </button>
                     </div>
                 </div>
 
@@ -1154,16 +1150,20 @@
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+                    <div style="margin-top:12px;">
                         <div class="form-group" style="margin:0">
-                            <label class="form-label">Название файла</label>
+                            <label class="form-label">Название файла (дашборд)</label>
                             <input type="text" id="shiftFileName" class="form-input" placeholder="shift_report">
                         </div>
-                        <button class="btn btn-primary" onclick="generateShiftReport()" style="white-space:nowrap; height:42px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Скачать — Дашборд
-                        </button>
                     </div>
+                </div>
+
+                <!-- ОДНА КНОПКА ДЛЯ ОБОИХ ФАЙЛОВ -->
+                <div style="padding-top:20px; border-top:1px solid var(--border); margin-top:4px;">
+                    <button class="btn btn-primary" onclick="generateBothReports()" style="width:100%; padding:14px; font-size:15px; font-weight:600;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Скачать оба файла
+                    </button>
                 </div>
 
                 <input type="hidden" id="excelVOshibke" value="">
@@ -2238,6 +2238,13 @@
             document.getElementById('shiftUnpairedPct').textContent = total ? (unpairedRows/total*100).toFixed(2)+'%' : '0%';
             document.getElementById('shiftTotal').textContent = total;
             document.getElementById('shiftPalletsResult').style.display = 'block';
+        }
+
+        async function generateBothReports() {
+            await generateExcel();
+            // Небольшая пауза чтобы браузер не заблокировал второе скачивание
+            await new Promise(r => setTimeout(r, 600));
+            await generateShiftReport();
         }
 
         async function generateShiftReport() {
