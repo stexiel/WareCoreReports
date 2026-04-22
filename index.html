@@ -2119,8 +2119,8 @@
 
             // Итоги — серый фон, чёрный жирный текст, значения в минутах
             const totals = [
-                ['Время ожидания технической службы', vOTSRaw ? `${vOTSRaw} мин` : ''],
-                ['Общее время ошибок',                vOshibkeRaw ? `${vOshibkeRaw} мин` : ''],
+                ['В ошибке',    vOshibkeRaw ? `${vOshibkeRaw} мин` : ''],
+                ['ВОТС',        vOTSRaw ? `${vOTSRaw} мин` : ''],
                 ['Инженер WCS', inzhener],
                 ['Тех служба',  tex],
             ];
@@ -2128,7 +2128,7 @@
             totals.forEach(([label, value]) => {
                 const r = ws.addRow([label, value]);
                 r.height = 18;
-                r.getCell(1).style = cellStyle(GREY_BG, true);
+                r.getCell(1).style = cellStyle(WHITE, true);
                 r.getCell(2).style = cellStyle(WHITE, true);
             });
 
