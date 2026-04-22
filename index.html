@@ -2293,7 +2293,7 @@
             const GREY_HDR   = 'FFD9D9D9'; // серый строка заголовков таблицы
             const YELLOW_TOT = 'FFFFFF99'; // жёлтый строка итогов
             const PINK_ROW   = 'FFFFCCCC'; // розовый строки ошибок
-            const GREEN_PALL = 'FF92D050'; // зелёный строки паллет
+            const BLUE_PALL  = 'FFBDD7EE'; // светло-голубой строки паллет (как фото 2)
             const WHITE      = 'FFFFFFFF';
             const BLACK      = 'FF000000';
 
@@ -2374,24 +2374,25 @@
             errRows.forEach(([label, val]) => {
                 const r = ws.addRow([label, val, '', '', '']);
                 r.getCell(1).style = cs(PINK_HDR, true, 'left');
-                r.getCell(2).style = cs(WHITE, true, 'center');
+                r.getCell(2).style = cs(PINK_HDR, true, 'center');
                 [3,4,5].forEach(col => { r.getCell(col).style = cs(WHITE, false); });
                 r.height = 16;
             });
             ws.addRow([]);
 
             // ── ПАЛЛЕТЫ ──────────────────────────────────────────
-            const pallRows = [
-                ['Парные',          paired,   '', pairedPct,   ''],
-                ['Не парные',       unpaired, '', unpairedPct, ''],
-                ['Общий кол паллет',total,    '', '',          ''],
+            // Парные / Непарные — светло-голубой; Общий — белый (как фото 2)
+            const pallData = [
+                { label:'Парные',          qty:paired,   pct:pairedPct,   bg:BLUE_PALL },
+                { label:'Не парные',       qty:unpaired, pct:unpairedPct, bg:BLUE_PALL },
+                { label:'Общий кол палет', qty:total,    pct:'',          bg:WHITE },
             ];
-            pallRows.forEach(([label, qty, , pct]) => {
+            pallData.forEach(({label, qty, pct, bg}) => {
                 const r = ws.addRow([label, qty, '', pct, '']);
-                r.getCell(1).style = cs(GREEN_PALL, true, 'left');
-                r.getCell(2).style = cs(WHITE, true, 'center');
+                r.getCell(1).style = cs(bg, true, 'left');
+                r.getCell(2).style = cs(bg, true, 'center');
                 r.getCell(3).style = cs(WHITE, false);
-                r.getCell(4).style = cs(WHITE, false, 'center');
+                r.getCell(4).style = cs(bg, true, 'center');
                 r.getCell(5).style = cs(WHITE, false);
                 r.height = 16;
             });
