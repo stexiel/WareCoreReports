@@ -2267,123 +2267,122 @@
 
             // Паллеты
             calcShiftPallets();
-            const paired   = parseInt(document.getElementById('shiftPaired').textContent) || 0;
-            const unpaired = parseInt(document.getElementById('shiftUnpaired').textContent) || 0;
-            const total    = parseInt(document.getElementById('shiftTotal').textContent) || 0;
+            const paired      = parseInt(document.getElementById('shiftPaired').textContent) || 0;
+            const unpaired    = parseInt(document.getElementById('shiftUnpaired').textContent) || 0;
+            const total       = parseInt(document.getElementById('shiftTotal').textContent) || 0;
             const pairedPct   = document.getElementById('shiftPairedPct').textContent;
             const unpairedPct = document.getElementById('shiftUnpairedPct').textContent;
 
             const workbook = new ExcelJS.Workbook();
             const ws = workbook.addWorksheet('Отчёт смены');
 
-            // Цвета
-            const HDR_SHIP  = 'FF90EE90'; // светло-зелёный
-            const HDR_RECV  = 'FF90EE90';
-            const HDR_ERR   = 'FFFFC0CB'; // светло-розовый
-            const GREY      = 'FFD9D9D9';
-            const WHITE     = 'FFFFFFFF';
-            const BLACK     = 'FF000000';
-            const TOTAL_BG  = 'FFFFFACD'; // светло-жёлтый
+            // ── Цвета точно по фото ──────────────────────────────
+            const GREEN_HDR  = 'FF92D050'; // зелёный заголовок Отгрузка/Приемка
+            const PINK_HDR   = 'FFFFCCCC'; // розовый заголовок Ошибка
+            const GREY_HDR   = 'FFD9D9D9'; // серый строка заголовков таблицы
+            const YELLOW_TOT = 'FFFFFF99'; // жёлтый строка итогов
+            const PINK_ROW   = 'FFFFCCCC'; // розовый строки ошибок
+            const GREEN_PALL = 'FF92D050'; // зелёный строки паллет
+            const WHITE      = 'FFFFFFFF';
+            const BLACK      = 'FF000000';
 
-            const border = { top:{style:'thin'}, bottom:{style:'thin'}, left:{style:'thin'}, right:{style:'thin'} };
+            const FONT  = 'Calibri';
+            const FSIZE = 12;
+            const BD    = { top:{style:'thin',color:{argb:BLACK}}, bottom:{style:'thin',color:{argb:BLACK}}, left:{style:'thin',color:{argb:BLACK}}, right:{style:'thin',color:{argb:BLACK}} };
 
-            function cs(bg, bold=false, align='center') {
+            function cs(bg, bold=true, align='center') {
                 return {
-                    fill: { type:'pattern', pattern:'solid', fgColor:{argb: bg} },
-                    font: { name:'Arial', size:10, bold, color:{argb: BLACK} },
-                    alignment: { horizontal: align, vertical:'middle' },
-                    border
+                    fill: { type:'pattern', pattern:'solid', fgColor:{argb:bg} },
+                    font: { name:FONT, size:FSIZE, bold, color:{argb:BLACK} },
+                    alignment: { horizontal:align, vertical:'middle' },
+                    border: BD
                 };
             }
 
+            // 5 колонок: Номер Кис | Кол паллет | Время начала | Время окончания | Общее время
             ws.columns = [
-                {width:22},{width:18},{width:14},{width:16},{width:20}
+                {width:26},{width:20},{width:16},{width:18},{width:22}
             ];
 
+            // Заголовок секции (слитый по 5 колонкам)
             function addSectionHeader(title, bgColor) {
                 const r = ws.addRow([title,'','','','']);
                 ws.mergeCells(`A${r.number}:E${r.number}`);
-                r.getCell(1).style = cs(bgColor, true, 'left');
-                r.height = 18;
+                r.getCell(1).style = { ...cs(bgColor, true, 'left') };
+                r.height = 20;
             }
 
-            function addTableHeader(bg) {
+            // Заголовок таблицы
+            function addTableHeader() {
                 const r = ws.addRow(['Номер Кис','Количество паллет','Время начала','Время окончания','Общее время (минут)']);
-                r.eachCell(c => { c.style = cs(bg, true); });
-                r.height = 15;
+                r.eachCell(c => { c.style = cs(GREY_HDR, true); });
+                r.height = 16;
             }
 
-            function addDataRows(rows, bg) {
+            // Строки данных + итог
+            function addDataRows(rows) {
                 let totalQty = 0, totalMin = 0;
                 rows.forEach(row => {
-                    const r = ws.addRow([row.kis, row.qty, row.start, row.end, row.diffMin !== '' ? `${row.diffMin}мин` : '']);
-                    r.eachCell(c => { c.style = cs(WHITE, false); });
-                    r.height = 15;
-                    const q = parseInt(row.qty);
-                    if (!isNaN(q)) totalQty += q;
+                    const diffVal = row.diffMin !== '' ? row.diffMin : '';
+                    const r = ws.addRow([row.kis, row.qty, row.start, row.end, diffVal]);
+                    r.eachCell((c, col) => {
+                        c.style = cs(WHITE, false, col === 1 ? 'left' : 'center');
+                    });
+                    r.height = 16;
+                    const q = parseInt(row.qty); if (!isNaN(q)) totalQty += q;
                     if (row.diffMin !== '') totalMin += parseInt(row.diffMin) || 0;
                 });
                 const tr = ws.addRow(['Общее количество', totalQty, '', '', `${totalMin} мин`]);
-                tr.eachCell(c => { c.style = cs(TOTAL_BG, true); });
-                tr.height = 15;
+                [1,2,3,4,5].forEach(col => {
+                    tr.getCell(col).style = cs(YELLOW_TOT, true, col === 1 ? 'left' : 'center');
+                });
+                tr.height = 16;
             }
 
-            // ОТГРУЗКА
-            ws.addRow([]);
-            addSectionHeader('Отгрузка', HDR_SHIP);
-            addTableHeader(GREY);
-            addDataRows(shipRows, WHITE);
-
-            // Пустая строка
+            // ── ОТГРУЗКА ─────────────────────────────────────────
+            addSectionHeader('Отгрузка', GREEN_HDR);
+            addTableHeader();
+            addDataRows(shipRows);
             ws.addRow([]);
 
-            // ПРИЕМКА
-            ws.addRow([]);
-            addSectionHeader('Приемка', HDR_RECV);
-            addTableHeader(GREY);
-            addDataRows(recvRows, WHITE);
-
-            // Пустая строка
+            // ── ПРИЕМКА ──────────────────────────────────────────
+            addSectionHeader('Приемка', GREEN_HDR);
+            addTableHeader();
+            addDataRows(recvRows);
             ws.addRow([]);
 
-            // ОШИБКА
-            ws.addRow([]);
-            addSectionHeader('Ошибка', HDR_ERR);
+            // ── ОШИБКА ───────────────────────────────────────────
+            addSectionHeader('Ошибка', PINK_HDR);
             const errRows = [
-                ['Количество ошибок', errCount],
-                ['Время когда Робот был в ошибке', `${errTime} минут`],
-                ['Время ожидания тех службы (ВОТС)', `${vots} минут`],
-                ['Имя тех службы', techName],
-                ['Инженер WCS', wcsName],
+                ['Количество ошибок',                 errCount],
+                ['Время когда Робот был в ошибке',    `${errTime} минут`],
+                ['Время ожидания тех службы (ВОТС)',  `${vots} минут`],
+                ['Имя тех службы',                    techName],
+                ['Инженер WCS',                       wcsName],
             ];
             errRows.forEach(([label, val]) => {
                 const r = ws.addRow([label, val, '', '', '']);
-                r.getCell(1).style = cs(GREY, true, 'left');
-                r.getCell(2).style = cs(WHITE, false, 'left');
-                r.height = 15;
+                r.getCell(1).style = cs(PINK_HDR, true, 'left');
+                r.getCell(2).style = cs(WHITE, true, 'center');
+                [3,4,5].forEach(col => { r.getCell(col).style = cs(WHITE, false); });
+                r.height = 16;
             });
-
-            // Пустая строка
             ws.addRow([]);
 
-            // ПАЛЛЕТЫ
-            ws.addRow([]);
-            const pallHdr = ws.addRow(['Парные / Непарные паллеты', '', '', '', '']);
-            ws.mergeCells(`A${pallHdr.number}:E${pallHdr.number}`);
-            pallHdr.getCell(1).style = cs(GREY, true, 'left');
-            pallHdr.height = 18;
-
+            // ── ПАЛЛЕТЫ ──────────────────────────────────────────
             const pallRows = [
-                ['Парные', paired, '', pairedPct, ''],
-                ['Не парные', unpaired, '', unpairedPct, ''],
-                ['Общий кол паллет', total, '', '', ''],
+                ['Парные',          paired,   '', pairedPct,   ''],
+                ['Не парные',       unpaired, '', unpairedPct, ''],
+                ['Общий кол паллет',total,    '', '',          ''],
             ];
-            pallRows.forEach(row => {
-                const r = ws.addRow(row);
-                r.getCell(1).style = cs(GREY, true, 'left');
-                r.getCell(2).style = cs(WHITE, true);
-                r.getCell(4).style = cs(WHITE, false);
-                r.height = 15;
+            pallRows.forEach(([label, qty, , pct]) => {
+                const r = ws.addRow([label, qty, '', pct, '']);
+                r.getCell(1).style = cs(GREEN_PALL, true, 'left');
+                r.getCell(2).style = cs(WHITE, true, 'center');
+                r.getCell(3).style = cs(WHITE, false);
+                r.getCell(4).style = cs(WHITE, false, 'center');
+                r.getCell(5).style = cs(WHITE, false);
+                r.height = 16;
             });
 
             const buffer = await workbook.xlsx.writeBuffer();
