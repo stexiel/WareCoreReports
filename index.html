@@ -1026,10 +1026,6 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                     <div class="form-group">
-                        <label class="form-label">ВОТС (мин)</label>
-                        <input type="number" id="excelVOTS" class="form-input" placeholder="225">
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Название файла</label>
                         <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report">
                     </div>
@@ -1064,6 +1060,88 @@
                         <h2 class="card-title">Добавленные строки</h2>
                     </div>
                     <div id="excelPreview" style="overflow-x: auto;"></div>
+                </div>
+            </div>
+
+            <!-- ===== ВТОРАЯ ТАБЛИЦА ===== -->
+            <div class="card" style="margin-top: 16px;">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Отчёт смены (второй файл)</h2>
+                        <p class="card-subtitle">Отгрузка, Приемка, Ошибки, Паллеты</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateShiftReport()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Скачать отчёт смены
+                    </button>
+                </div>
+
+                <!-- ОТГРУЗКА -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                        <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin:0;">Отгрузка</h3>
+                        <button class="btn btn-secondary" style="padding:4px 12px; font-size:12px;" onclick="addShipmentRow()">+ Добавить</button>
+                    </div>
+                    <div id="shipmentRows">
+                        <!-- строки добавляются динамически -->
+                    </div>
+                </div>
+
+                <!-- ПРИЕМКА -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                        <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin:0;">Приемка</h3>
+                        <button class="btn btn-secondary" style="padding:4px 12px; font-size:12px;" onclick="addReceiptRow()">+ Добавить</button>
+                    </div>
+                    <div id="receiptRows">
+                        <!-- строки добавляются динамически -->
+                    </div>
+                </div>
+
+                <!-- ОШИБКА -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Ошибка</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="form-group">
+                            <label class="form-label">Количество ошибок</label>
+                            <input type="number" id="shiftErrCount" class="form-input" placeholder="32">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Время когда Робот был в ошибке (мин)</label>
+                            <input type="number" id="shiftErrTime" class="form-input" placeholder="390">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ВОТС — время ожидания тех службы (мин)</label>
+                            <input type="number" id="shiftVOTS" class="form-input" placeholder="69">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Имя тех службы</label>
+                            <input type="text" id="shiftTechName" class="form-input" placeholder="Chinese">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Инженер WCS</label>
+                            <input type="text" id="shiftWcsName" class="form-input" placeholder="DIAS">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ПАРНЫЕ / НЕПАРНЫЕ ПАЛЛЕТЫ -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Парные / Непарные паллеты</h3>
+                    <div class="form-group">
+                        <label class="form-label">Вставьте данные паллет (каждый штрихкод на новой строке)</label>
+                        <textarea id="shiftPalletsInput" class="form-input" rows="6" placeholder="1234567890&#10;1234567890&#10;9876543210"></textarea>
+                    </div>
+                    <div id="shiftPalletsResult" style="display:none; margin-top:8px; font-size:13px; padding:10px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
+                        <div>Парные: <strong id="shiftPaired">0</strong> — <strong id="shiftPairedPct">0%</strong></div>
+                        <div>Не парные: <strong id="shiftUnpaired">0</strong> — <strong id="shiftUnpairedPct">0%</strong></div>
+                        <div>Общий кол паллет: <strong id="shiftTotal">0</strong></div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top:8px;" onclick="calcShiftPallets()">Рассчитать паллеты</button>
                 </div>
             </div>
         </div>
@@ -2001,6 +2079,248 @@
             a.click();
             URL.revokeObjectURL(url);
         }
+
+        // ===== ВТОРАЯ ТАБЛИЦА: ОТГРУЗКА / ПРИЕМКА =====
+
+        let shipmentCount = 0;
+        let receiptCount = 0;
+
+        function makeRowHtml(idPrefix, index) {
+            return `<div id="${idPrefix}Row${index}" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:end;">
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:11px;">Номер Кис</label>
+                    <input type="text" id="${idPrefix}Kis${index}" class="form-input" placeholder="АЛЦ-0114435">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:11px;">Кол-во паллет</label>
+                    <input type="text" id="${idPrefix}Qty${index}" class="form-input" placeholder="40">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:11px;">Время начала</label>
+                    <input type="text" id="${idPrefix}Start${index}" class="form-input" placeholder="09:41:05">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:11px;">Время окончания</label>
+                    <input type="text" id="${idPrefix}End${index}" class="form-input" placeholder="10:16:30">
+                </div>
+                <button onclick="document.getElementById('${idPrefix}Row${index}').remove()" style="padding:8px 10px; background:var(--danger,#ef4444); color:#fff; border:none; border-radius:6px; cursor:pointer; height:36px; margin-bottom:0;">✕</button>
+            </div>`;
+        }
+
+        function addShipmentRow() {
+            shipmentCount++;
+            document.getElementById('shipmentRows').insertAdjacentHTML('beforeend', makeRowHtml('ship', shipmentCount));
+        }
+
+        function addReceiptRow() {
+            receiptCount++;
+            document.getElementById('receiptRows').insertAdjacentHTML('beforeend', makeRowHtml('recv', receiptCount));
+        }
+
+        function parseHMS(str) {
+            if (!str) return null;
+            const p = str.trim().split(':');
+            if (p.length < 2) return null;
+            const h = parseInt(p[0]), m = parseInt(p[1]), s = parseInt(p[2] || 0);
+            if (isNaN(h) || isNaN(m)) return null;
+            return h * 3600 + m * 60 + (isNaN(s) ? 0 : s);
+        }
+
+        function secToHMS(sec) {
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function collectRows(idPrefix) {
+            const rows = [];
+            document.querySelectorAll(`[id^="${idPrefix}Row"]`).forEach(el => {
+                const idx = el.id.replace(`${idPrefix}Row`, '');
+                const kis = (document.getElementById(`${idPrefix}Kis${idx}`) || {}).value || '';
+                const qty = (document.getElementById(`${idPrefix}Qty${idx}`) || {}).value || '';
+                const start = (document.getElementById(`${idPrefix}Start${idx}`) || {}).value || '';
+                const end = (document.getElementById(`${idPrefix}End${idx}`) || {}).value || '';
+                if (!kis.trim()) return;
+                const startSec = parseHMS(start);
+                const endSec = parseHMS(end);
+                let diffMin = '';
+                if (startSec !== null && endSec !== null) {
+                    let d = endSec - startSec;
+                    if (d < 0) d += 86400;
+                    diffMin = Math.round(d / 60);
+                }
+                rows.push({ kis, qty, start, end, diffMin });
+            });
+            return rows;
+        }
+
+        function calcShiftPallets() {
+            const input = document.getElementById('shiftPalletsInput').value;
+            const lines = input.trim().split('\n').map(l => l.trim()).filter(l => l);
+            const counts = {};
+            lines.forEach(l => { counts[l] = (counts[l] || 0) + 1; });
+            let paired = 0, unpaired = 0;
+            Object.values(counts).forEach(c => {
+                if (c % 2 === 0) paired += c;
+                else { paired += c - 1; unpaired += 1; }
+            });
+            const total = lines.length;
+            document.getElementById('shiftPaired').textContent = paired;
+            document.getElementById('shiftPairedPct').textContent = total ? (paired/total*100).toFixed(2)+'%' : '0%';
+            document.getElementById('shiftUnpaired').textContent = unpaired;
+            document.getElementById('shiftUnpairedPct').textContent = total ? (unpaired/total*100).toFixed(2)+'%' : '0%';
+            document.getElementById('shiftTotal').textContent = total;
+            document.getElementById('shiftPalletsResult').style.display = 'block';
+        }
+
+        async function generateShiftReport() {
+            const shipRows = collectRows('ship');
+            const recvRows = collectRows('recv');
+
+            const errCount = document.getElementById('shiftErrCount').value || '';
+            const errTime  = document.getElementById('shiftErrTime').value || '';
+            const vots     = document.getElementById('shiftVOTS').value || '';
+            const techName = document.getElementById('shiftTechName').value || '';
+            const wcsName  = document.getElementById('shiftWcsName').value || '';
+            const fileName = (document.getElementById('excelFileName').value.trim() || 'shift_report') + '_смена.xlsx';
+
+            // Паллеты
+            calcShiftPallets();
+            const paired   = parseInt(document.getElementById('shiftPaired').textContent) || 0;
+            const unpaired = parseInt(document.getElementById('shiftUnpaired').textContent) || 0;
+            const total    = parseInt(document.getElementById('shiftTotal').textContent) || 0;
+            const pairedPct   = document.getElementById('shiftPairedPct').textContent;
+            const unpairedPct = document.getElementById('shiftUnpairedPct').textContent;
+
+            const workbook = new ExcelJS.Workbook();
+            const ws = workbook.addWorksheet('Отчёт смены');
+
+            // Цвета
+            const HDR_SHIP  = 'FF90EE90'; // светло-зелёный
+            const HDR_RECV  = 'FF90EE90';
+            const HDR_ERR   = 'FFFFC0CB'; // светло-розовый
+            const GREY      = 'FFD9D9D9';
+            const WHITE     = 'FFFFFFFF';
+            const BLACK     = 'FF000000';
+            const TOTAL_BG  = 'FFFFFACD'; // светло-жёлтый
+
+            const border = { top:{style:'thin'}, bottom:{style:'thin'}, left:{style:'thin'}, right:{style:'thin'} };
+
+            function cs(bg, bold=false, align='center') {
+                return {
+                    fill: { type:'pattern', pattern:'solid', fgColor:{argb: bg} },
+                    font: { name:'Arial', size:10, bold, color:{argb: BLACK} },
+                    alignment: { horizontal: align, vertical:'middle' },
+                    border
+                };
+            }
+
+            ws.columns = [
+                {width:22},{width:18},{width:14},{width:16},{width:20}
+            ];
+
+            function addSectionHeader(title, bgColor) {
+                const r = ws.addRow([title,'','','','']);
+                ws.mergeCells(`A${r.number}:E${r.number}`);
+                r.getCell(1).style = cs(bgColor, true, 'left');
+                r.height = 18;
+            }
+
+            function addTableHeader(bg) {
+                const r = ws.addRow(['Номер Кис','Количество паллет','Время начала','Время окончания','Общее время (минут)']);
+                r.eachCell(c => { c.style = cs(bg, true); });
+                r.height = 15;
+            }
+
+            function addDataRows(rows, bg) {
+                let totalQty = 0, totalMin = 0;
+                rows.forEach(row => {
+                    const r = ws.addRow([row.kis, row.qty, row.start, row.end, row.diffMin !== '' ? `${row.diffMin}мин` : '']);
+                    r.eachCell(c => { c.style = cs(WHITE, false); });
+                    r.height = 15;
+                    const q = parseInt(row.qty);
+                    if (!isNaN(q)) totalQty += q;
+                    if (row.diffMin !== '') totalMin += parseInt(row.diffMin) || 0;
+                });
+                const tr = ws.addRow(['Общее количество', totalQty, '', '', `${totalMin} мин`]);
+                tr.eachCell(c => { c.style = cs(TOTAL_BG, true); });
+                tr.height = 15;
+            }
+
+            // ОТГРУЗКА
+            ws.addRow([]);
+            addSectionHeader('Отгрузка', HDR_SHIP);
+            addTableHeader(GREY);
+            addDataRows(shipRows, WHITE);
+
+            // Пустая строка
+            ws.addRow([]);
+
+            // ПРИЕМКА
+            ws.addRow([]);
+            addSectionHeader('Приемка', HDR_RECV);
+            addTableHeader(GREY);
+            addDataRows(recvRows, WHITE);
+
+            // Пустая строка
+            ws.addRow([]);
+
+            // ОШИБКА
+            ws.addRow([]);
+            addSectionHeader('Ошибка', HDR_ERR);
+            const errRows = [
+                ['Количество ошибок', errCount],
+                ['Время когда Робот был в ошибке', `${errTime} минут`],
+                ['Время ожидания тех службы (ВОТС)', `${vots} минут`],
+                ['Имя тех службы', techName],
+                ['Инженер WCS', wcsName],
+            ];
+            errRows.forEach(([label, val]) => {
+                const r = ws.addRow([label, val, '', '', '']);
+                r.getCell(1).style = cs(GREY, true, 'left');
+                r.getCell(2).style = cs(WHITE, false, 'left');
+                r.height = 15;
+            });
+
+            // Пустая строка
+            ws.addRow([]);
+
+            // ПАЛЛЕТЫ
+            ws.addRow([]);
+            const pallHdr = ws.addRow(['Парные / Непарные паллеты', '', '', '', '']);
+            ws.mergeCells(`A${pallHdr.number}:E${pallHdr.number}`);
+            pallHdr.getCell(1).style = cs(GREY, true, 'left');
+            pallHdr.height = 18;
+
+            const pallRows = [
+                ['Парные', paired, '', pairedPct, ''],
+                ['Не парные', unpaired, '', unpairedPct, ''],
+                ['Общий кол паллет', total, '', '', ''],
+            ];
+            pallRows.forEach(row => {
+                const r = ws.addRow(row);
+                r.getCell(1).style = cs(GREY, true, 'left');
+                r.getCell(2).style = cs(WHITE, true);
+                r.getCell(4).style = cs(WHITE, false);
+                r.height = 15;
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // При загрузке страницы добавить по одной строке
+        window.addEventListener('DOMContentLoaded', () => {
+            addShipmentRow();
+            addReceiptRow();
+        });
 
         // Загрузка настроек при запуске
         loadSettings();
