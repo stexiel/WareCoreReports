@@ -2116,16 +2116,10 @@
                 };
             });
 
-            // Итоги — без фона, красный жирный текст Calibri 12
-            const redStyle = {
-                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: WHITE } },
-                font: { name: FONT, size: FSIZE, bold: true, color: { argb: RED } },
-                alignment: { horizontal: 'center', vertical: 'middle' },
-                border: BORDER
-            };
+            // Итоги — серый фон, чёрный жирный текст, значения в минутах
             const totals = [
-                ['В ошибке', minsToHMS(vOshibkeRaw)],
-                ['ВОТС',     minsToHMS(vOTSRaw)],
+                ['Время ожидания технической службы', vOTSRaw ? `${vOTSRaw} мин` : ''],
+                ['Общее время ошибок',                vOshibkeRaw ? `${vOshibkeRaw} мин` : ''],
                 ['Инженер WCS', inzhener],
                 ['Тех служба',  tex],
             ];
@@ -2133,8 +2127,8 @@
             totals.forEach(([label, value]) => {
                 const r = ws.addRow([label, value]);
                 r.height = 18;
-                r.getCell(1).style = redStyle;
-                r.getCell(2).style = redStyle;
+                r.getCell(1).style = cellStyle(GREY_BG, true);
+                r.getCell(2).style = cellStyle(WHITE, true);
             });
 
             // Скачиваем
