@@ -2287,13 +2287,16 @@
             const workbook = new ExcelJS.Workbook();
             const ws = workbook.addWorksheet('Отчёт смены');
 
-            // ── Цвета точно по фото ──────────────────────────────
+            // ── Цвета ────────────────────────────────────────────
             const GREEN_HDR  = 'FF92D050'; // зелёный заголовок Отгрузка/Приемка
-            const PINK_HDR   = 'FFFFCCCC'; // розовый заголовок Ошибка
-            const GREY_HDR   = 'FFD9D9D9'; // серый строка заголовков таблицы
-            const YELLOW_TOT = 'FFFFFF99'; // жёлтый строка итогов
-            const PINK_ROW   = 'FFFFCCCC'; // розовый строки ошибок
-            const BLUE_PALL  = 'FFBDD7EE'; // светло-голубой строки паллет (как фото 2)
+            const GREY_HDR   = 'FFD9D9D9'; // серый заголовок таблицы
+            const YELLOW_TOT = 'FFFFFF99'; // жёлтый итог
+            // Блок "Ошибка" верх — бежевый (входные данные)
+            const BEIGE_HDR  = 'FFFFF2CC'; // светло-бежевый заголовок
+            const BEIGE_ROW  = 'FFFFF2CC'; // бежевые строки
+            // Блок "Паллеты" низ — голубой (результаты)
+            const BLUE_HDR   = 'FFDAE8FC'; // голубой заголовок
+            const BLUE_ROW   = 'FFDAE8FC'; // голубые строки
             const WHITE      = 'FFFFFFFF';
             const BLACK      = 'FF000000';
 
@@ -2362,38 +2365,50 @@
             addDataRows(recvRows);
             ws.addRow([]);
 
-            // ── ОШИБКА ───────────────────────────────────────────
-            addSectionHeader('Ошибка', PINK_HDR);
+            // ── БЛОК 1: ОШИБКА (бежевый — входные данные) ────────
+            {
+                const hdr = ws.addRow(['Ошибка', '', '', '', '']);
+                ws.mergeCells(`A${hdr.number}:E${hdr.number}`);
+                hdr.getCell(1).style = { ...cs(BEIGE_HDR, true, 'left') };
+                hdr.height = 20;
+            }
             const errRows = [
-                ['Количество ошибок',                 errCount],
-                ['Время когда Робот был в ошибке',    `${errTime} минут`],
-                ['Время ожидания тех службы (ВОТС)',  `${vots} минут`],
-                ['Имя тех службы',                    techName],
-                ['Инженер WCS',                       wcsName],
+                ['Количество ошибок',                errCount],
+                ['Время когда Робот был в ошибке',   `${errTime} минут`],
+                ['Время ожидания тех службы (ВОТС)', `${vots} минут`],
+                ['Имя тех службы',                   techName],
+                ['Инженер WCS',                      wcsName],
             ];
             errRows.forEach(([label, val]) => {
                 const r = ws.addRow([label, val, '', '', '']);
-                r.getCell(1).style = cs(PINK_HDR, true, 'left');
-                r.getCell(2).style = cs(PINK_HDR, true, 'center');
+                r.getCell(1).style = cs(BEIGE_ROW, true, 'left');
+                r.getCell(2).style = cs(BEIGE_ROW, true, 'center');
                 [3,4,5].forEach(col => { r.getCell(col).style = cs(WHITE, false); });
                 r.height = 16;
             });
+
+            // Визуальный разрыв между блоками
             ws.addRow([]);
 
-            // ── ПАЛЛЕТЫ ──────────────────────────────────────────
-            // Парные / Непарные — светло-голубой; Общий — белый (как фото 2)
+            // ── БЛОК 2: ПАЛЛЕТЫ (голубой — результаты) ───────────
+            {
+                const hdr = ws.addRow(['Парные / Непарные паллеты', '', '', '', '']);
+                ws.mergeCells(`A${hdr.number}:E${hdr.number}`);
+                hdr.getCell(1).style = { ...cs(BLUE_HDR, true, 'left') };
+                hdr.height = 20;
+            }
+            // Проценты в той же строке рядом с числами (колонка 3)
             const pallData = [
-                { label:'Парные',          qty:paired,   pct:pairedPct,   bg:BLUE_PALL },
-                { label:'Не парные',       qty:unpaired, pct:unpairedPct, bg:BLUE_PALL },
-                { label:'Общий кол палет', qty:total,    pct:'',          bg:WHITE },
+                { label:'Парные',          qty:paired,   pct:pairedPct,   bg:BLUE_ROW },
+                { label:'Не парные',       qty:unpaired, pct:unpairedPct, bg:BLUE_ROW },
+                { label:'Общий кол палет', qty:total,    pct:'',          bg:WHITE    },
             ];
             pallData.forEach(({label, qty, pct, bg}) => {
-                const r = ws.addRow([label, qty, '', pct, '']);
+                const r = ws.addRow([label, qty, pct, '', '']);
                 r.getCell(1).style = cs(bg, true, 'left');
                 r.getCell(2).style = cs(bg, true, 'center');
-                r.getCell(3).style = cs(WHITE, false);
-                r.getCell(4).style = cs(bg, true, 'center');
-                r.getCell(5).style = cs(WHITE, false);
+                r.getCell(3).style = cs(bg, true, 'center');
+                [4,5].forEach(col => { r.getCell(col).style = cs(WHITE, false); });
                 r.height = 16;
             });
 
