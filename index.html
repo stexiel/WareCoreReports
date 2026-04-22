@@ -1948,173 +1948,180 @@
                 return;
             }
 
-            const vOshibke = document.getElementById('excelVOshibke').value || '';
-            const vOTS = document.getElementById('shiftVOTS').value || '';
-            const inzhener = document.getElementById('excelInzhener').value || '';
-            const tex = document.getElementById('excelTex').value || '';
-            const fileName = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
+            const vOshibkeRaw = parseInt(document.getElementById('excelVOshibke').value) || 0;
+            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || 0;
+            const inzhener    = document.getElementById('excelInzhener').value || '';
+            const tex         = document.getElementById('excelTex').value || '';
+            const fileName    = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
+
+            // Конвертация минут → ЧЧ:ММ:СС
+            function minsToHMS(mins) {
+                const h = Math.floor(mins / 60);
+                const m = mins % 60;
+                return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
+            }
+
+            // Вычисление времени ВОТС (середина) для строки тех
+            function calcVotsTime(startHMS, endHMS) {
+                const toSec = t => { const p = t.split(':'); return parseInt(p[0])*3600+parseInt(p[1])*60+parseInt(p[2]||0); };
+                const fromSec = s => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; };
+                let s = toSec(startHMS), e = toSec(endHMS);
+                if (e < s) e += 86400;
+                const diffSec = e - s;
+                const diffMin = diffSec / 60;
+                if (diffMin <= 15) {
+                    // минус 2 минуты от конца
+                    return fromSec(e - 120);
+                } else {
+                    // середина
+                    return fromSec(s + Math.round(diffSec / 2));
+                }
+            }
 
             const workbook = new ExcelJS.Workbook();
             const ws = workbook.addWorksheet('Отчёт');
 
             // Цвета
-            const GREY_HEADER = 'FFBFBFBF'; // серый для заголовков
-            const GREY_BG = 'FFBFBFBF';    // серый для пустых ячеек
-            const TIME_BG = 'FFBDD7EE';    // светло-синий фон колонки Время
-            const RED = 'FFFF0000';
-            const YELLOW = 'FFFFFF00';
-            const GREEN = 'FF92D050';
-            const LIGHT_GREEN = 'FF92D050';
-            const VOTS_BG = 'FF00B0F0';    // синий ВОТС
-            const ERR_BG = 'FFFF9999';     // розовый В ошибке
-            const WHITE = 'FFFFFFFF';
-            const BLACK = 'FF000000';
-            const DESC_BG = 'FFD9D9D9';    // серый фон описаний легенды
+            const RED_HDR  = 'FFFF0000';   // красный заголовок
+            const GREY_BG  = 'FFBFBFBF';   // серый пустые ячейки
+            const TIME_BG  = 'FFBDD7EE';   // светло-синий фон колонки Время
+            const RED      = 'FFFF0000';   // F06 красный
+            const YELLOW   = 'FFFFFF00';   // тех жёлтый
+            const GREEN    = 'FF92D050';   // готов к работе зелёный
+            const VOTS_BG  = 'FF00B0F0';   // синий ВОТС легенда
+            const ERR_BG   = 'FFFF9999';   // розовый В ошибке легенда
+            const WHITE    = 'FFFFFFFF';
+            const BLACK    = 'FF000000';
+
+            const FONT = 'Calibri';
+            const FSIZE = 12;
+            const BORDER = { top:{style:'thin',color:{argb:BLACK}}, bottom:{style:'thin',color:{argb:BLACK}}, left:{style:'thin',color:{argb:BLACK}}, right:{style:'thin',color:{argb:BLACK}} };
 
             // Ширина колонок
             ws.columns = [
-                { key: 'time', width: 12 },
-                { key: 's1', width: 14 },
-                { key: 's2', width: 14 },
-                { key: 's3', width: 14 },
-                { key: 's4', width: 14 },
-                { key: 's5', width: 14 },
-                { key: 's6', width: 14 },
-                { key: 's7', width: 14 },
-                { key: 's8', width: 14 },
-                { key: 's9', width: 14 },
-                { key: 's10', width: 14 },
+                { key: 'time', width: 14 },
+                { key: 's1',   width: 16 },
+                { key: 's2',   width: 16 },
+                { key: 's3',   width: 16 },
+                { key: 's4',   width: 16 },
+                { key: 's5',   width: 16 },
+                { key: 's6',   width: 16 },
+                { key: 's7',   width: 16 },
+                { key: 's8',   width: 16 },
+                { key: 's9',   width: 16 },
+                { key: 's10',  width: 16 },
             ];
 
-            // Функция стиля ячейки — строго чёрный текст, без отклонений
-            const cellStyle = (bgColor, bold = false) => ({
+            // Стиль обычной ячейки (чёрный текст)
+            const cellStyle = (bgColor, bold = true) => ({
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } },
-                font: { name: 'Arial', size: 8, bold: bold, color: { argb: BLACK } },
+                font: { name: FONT, size: FSIZE, bold: bold, color: { argb: BLACK } },
                 alignment: { horizontal: 'center', vertical: 'middle', wrapText: false },
-                border: {
-                    top: { style: 'thin', color: { argb: 'FF000000' } },
-                    bottom: { style: 'thin', color: { argb: 'FF000000' } },
-                    left: { style: 'thin', color: { argb: 'FF000000' } },
-                    right: { style: 'thin', color: { argb: 'FF000000' } }
-                }
+                border: BORDER
             });
 
-            // Заголовки — серый фон, чёрный жирный текст, по центру
-            const headers = ['Время', '1-штабелер', '2-штабелер', '3-штабелер', '4-штабелер', '5-штабелер', '6-штабелер', '7-штабелер', '8-штабелер', '9-штабелер', '10-штабелер'];
-            const headerRow = ws.addRow(headers);
-            headerRow.eachCell((cell) => {
-                cell.style = cellStyle(GREY_HEADER, true);
-            });
-            headerRow.height = 15;
-
-            // Функция статуса → цвет
-            function statusColor(status) {
-                if (status === 'F06') return RED;
-                if (status === 'тех') return YELLOW;
-                if (status === 'готов к работе') return GREEN;
-                return GREY_BG;
-            }
-
-            // Функция статуса → текст
-            function statusText(status) {
-                if (status === 'F06') return 'F06';
-                if (status === 'тех') return 'тех';
-                if (status === 'готов к работе') return 'готов к работе';
-                return '';
-            }
-
-            const timeCellStyle = (fontColor) => ({
+            // Стиль ячейки времени (красный текст)
+            const timeStyle = () => ({
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: TIME_BG } },
-                font: { name: 'Arial', size: 8, bold: true, color: { argb: fontColor } },
+                font: { name: FONT, size: FSIZE, bold: true, color: { argb: RED } },
                 alignment: { horizontal: 'center', vertical: 'middle' },
-                border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                border: BORDER
             });
 
-            // Проходим по событиям — БЕЗ пустых строк между ними
+            // Стиль ячейки времени пустой (без текста, серый)
+            const timeEmptyStyle = () => ({
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
+                font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: BORDER
+            });
+
+            // Заголовки — КРАСНЫЙ фон, чёрный жирный Calibri 12
+            const headers = ['Время','1-штабелер','2-штабелер','3-штабелер','4-штабелер','5-штабелер','6-штабелер','7-штабелер','8-штабелер','9-штабелер','10-штабелер'];
+            const headerRow = ws.addRow(headers);
+            headerRow.eachCell(cell => { cell.style = cellStyle(RED_HDR, true); });
+            headerRow.height = 18;
+
+            // Строки данных
             for (let i = 0; i < excelData.length; i++) {
                 const row = excelData[i];
+                const votsTime = calcVotsTime(row.time, row.endTime);
 
-                // Строка F06 — светло-синий фон времени, красный текст; ячейки F06 красные
+                // Строка 1: F06 — время начала красным, ячейка F06 красная
                 const f06Row = ws.addRow([row.time, ...row.statuses.map(s => s === 'F06' ? 'F06' : '')]);
-                f06Row.height = 15;
-                f06Row.getCell(1).style = timeCellStyle(RED);
-                row.statuses.forEach((status, idx) => {
-                    const cell = f06Row.getCell(idx + 2);
-                    cell.style = cellStyle(status === 'F06' ? RED : GREY_BG, status === 'F06');
+                f06Row.height = 18;
+                f06Row.getCell(1).style = timeStyle();
+                row.statuses.forEach((s, idx) => {
+                    f06Row.getCell(idx + 2).style = cellStyle(s === 'F06' ? RED : GREY_BG, true);
                 });
 
-                // Строка тех — светло-синий фон времени пустой; ячейки жёлтые
-                const texRow = ws.addRow(['', ...row.statuses.map(s => s === 'F06' ? 'тех' : '')]);
-                texRow.height = 15;
-                texRow.getCell(1).style = timeCellStyle(BLACK);
-                texRow.getCell(1).value = '';
-                row.statuses.forEach((status, idx) => {
-                    const cell = texRow.getCell(idx + 2);
-                    cell.style = cellStyle(status === 'F06' ? YELLOW : GREY_BG);
+                // Строка 2: тех — время ВОТС красным, ячейка жёлтая
+                const texRow = ws.addRow([votsTime, ...row.statuses.map(s => s === 'F06' ? 'тех' : '')]);
+                texRow.height = 18;
+                texRow.getCell(1).style = timeStyle();
+                row.statuses.forEach((s, idx) => {
+                    texRow.getCell(idx + 2).style = cellStyle(s === 'F06' ? YELLOW : GREY_BG, true);
                 });
 
-                // Строка готов к работе — светло-синий фон времени; ячейки зелёные
+                // Строка 3: готов к работе — время окончания красным, ячейка зелёная
                 const readyRow = ws.addRow([row.endTime || '', ...row.statuses.map(s => s === 'F06' ? 'готов к работе' : '')]);
-                readyRow.height = 15;
-                readyRow.getCell(1).style = timeCellStyle(BLACK);
-                row.statuses.forEach((status, idx) => {
-                    const cell = readyRow.getCell(idx + 2);
-                    cell.style = cellStyle(status === 'F06' ? GREEN : GREY_BG);
+                readyRow.height = 18;
+                readyRow.getCell(1).style = timeStyle();
+                row.statuses.forEach((s, idx) => {
+                    readyRow.getCell(idx + 2).style = cellStyle(s === 'F06' ? GREEN : GREY_BG, true);
                 });
             }
 
-            // Легенда справа (начиная с колонки 13)
+            // Легенда справа (колонка 13) — как на фото 6: белый фон описания
             const legendStartCol = 13;
-            // Легенда точно как на картинке: F06 красный, готов к работе зелёный, ВОТС синий, В ошибке розовый
             const legendData = [
-                { color: RED,      text: 'F06',            desc: 'Код ошибки' },
-                { color: GREEN,    text: 'готов к работе', desc: 'Время снятия ошибки со штабелера.' },
-                { color: VOTS_BG,  text: 'ВОТС',           desc: 'Время ожидания технической службы.' },
-                { color: ERR_BG,   text: 'В ошибке',       desc: 'Общее время простоя штабелера по причине ошибки.' },
+                { color: RED,     text: 'F06',            desc: 'Код ошибки' },
+                { color: GREEN,   text: 'готов к работе', desc: 'Время снятия ошибки со штабелера.' },
+                { color: VOTS_BG, text: 'ВОТС',           desc: 'Время ожидания технической службы.' },
+                { color: ERR_BG,  text: 'В ошибке',       desc: 'Общее время простоя штабелера по причине ошибки.' },
             ];
 
-            legendData.forEach((item, idx) => {
-                const rowNum = idx + 2;
-                const wsRow = ws.getRow(rowNum);
+            ws.getColumn(legendStartCol).width = 18;
+            ws.getColumn(legendStartCol + 1).width = 48;
 
+            legendData.forEach((item, idx) => {
+                const wsRow = ws.getRow(idx + 2);
                 const labelCell = wsRow.getCell(legendStartCol);
                 labelCell.value = item.text;
                 labelCell.style = {
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: item.color } },
-                    font: { name: 'Arial', size: 8, bold: true, color: { argb: BLACK } },
+                    font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
                     alignment: { horizontal: 'center', vertical: 'middle' },
-                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                    border: BORDER
                 };
-
                 const descCell = wsRow.getCell(legendStartCol + 1);
                 descCell.value = item.desc;
                 descCell.style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: DESC_BG } },
-                    font: { name: 'Arial', size: 8, color: { argb: BLACK } },
-                    alignment: { horizontal: 'left', vertical: 'middle', wrapText: false },
-                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: WHITE } },
+                    font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
+                    alignment: { horizontal: 'left', vertical: 'middle' },
+                    border: BORDER
                 };
-
-                ws.getColumn(legendStartCol).width = 18;
-                ws.getColumn(legendStartCol + 1).width = 46;
             });
 
-            // Пустая строка
-            ws.addRow([]);
-
-            // Итоги
+            // Итоги — В ошибке и ВОТС в формате ЧЧ:ММ:СС
             const totals = [
-                ['В ошибке', `${vOshibke} минут`],
-                ['ВОТС', `${vOTS} минут`],
+                ['В ошибке', minsToHMS(vOshibkeRaw)],
+                ['ВОТС',     minsToHMS(vOTSRaw)],
                 ['Инженер WCS', inzhener],
-                ['Тех служба', tex],
+                ['Тех служба',  tex],
             ];
 
             totals.forEach(([label, value]) => {
                 const r = ws.addRow([label, value]);
-                r.height = 15;
-                r.getCell(1).style = cellStyle(GREY_HEADER, true);
-                r.getCell(2).style = cellStyle(WHITE);
+                r.height = 18;
+                r.getCell(1).style = cellStyle(GREY_BG, true);
+                r.getCell(2).style = {
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: WHITE } },
+                    font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: BORDER
+                };
             });
 
             // Скачиваем
