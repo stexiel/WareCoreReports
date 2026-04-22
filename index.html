@@ -1057,10 +1057,9 @@
                             <div id="statErrTime" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
                             <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">мин · авто</div>
                         </div>
-                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
-                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Событий найдено</div>
-                            <div id="statEvents" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
-                            <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">строк</div>
+                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px;">
+                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ВОТС (мин)</div>
+                            <input type="number" id="shiftVOTS" class="form-input" placeholder="128" style="width:100%; text-align:center; font-size:18px; font-weight:700;">
                         </div>
                     </div>
 
@@ -1915,6 +1914,8 @@
                 localStorage.removeItem('excelData');
                 localStorage.removeItem('field_shiftErrCount');
                 localStorage.removeItem('field_shiftErrTime');
+                const sv = document.getElementById('shiftVOTS'); if (sv) sv.value = '';
+                localStorage.removeItem('field_shiftVOTS');
                 updateExcelPreview();
             } catch(e) { console.error('clearExcelData error:', e); }
         }
@@ -2420,7 +2421,7 @@
         const PERSIST_IDS = [
             'quickTimeInput', 'timeInput', 'palletInput', 'excelInput',
             'excelFileName', 'shiftFileName', 'excelInzhener', 'excelTex',
-            'shiftPalletsInput'
+            'shiftVOTS', 'shiftPalletsInput'
         ];
 
         function saveField(id) {
