@@ -1004,145 +1004,126 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Генератор Excel</h2>
-                        <p class="card-subtitle">Создание таблицы штабелеров с датой, временем и статусами</p>
+                        <h2 class="card-title">Генератор Excel отчётов</h2>
+                        <p class="card-subtitle">Заполните данные и скачайте нужные файлы</p>
                     </div>
-                    <button class="btn btn-primary" onclick="generateExcel()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Скачать Excel
-                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Данные (вставьте из отчёта)</label>
-                    <textarea id="excelInput" class="form-input" placeholder="SC0401	Conveyor	1006940137864695808	ScFault1	DH01	超边报警	2026.04.18 21:22:37	2026.04.18 21:47:44"></textarea>
+                <!-- ===== БЛОК 1: ОБЩИЕ ДАННЫЕ ===== -->
+                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px;">
+                    <h3 style="font-size:14px; font-weight:700; margin:0 0 12px 0; color:var(--text-primary);">Общие данные смены</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Инженер WCS</label>
+                            <input type="text" id="excelInzhener" class="form-input" placeholder="Aser">
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Тех служба</label>
+                            <input type="text" id="excelTex" class="form-input" placeholder="Лёша, Владимир, Ержан">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== БЛОК 2: ДАННЫЕ ПО ОШИБКАМ (таблица 1) ===== -->
+                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px;">
+                    <h3 style="font-size:14px; font-weight:700; margin:0 0 12px 0; color:var(--text-primary);">Отчёт по ошибкам штабелеров</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Данные из отчёта (вставьте сырые строки)</label>
+                        <textarea id="excelInput" class="form-input" rows="4" placeholder="SC0401	Conveyor	1006940137864695808	ScFault1	DH01	超边报警	2026.04.18 21:22:37	2026.04.18 21:47:44"></textarea>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Количество ошибок <span style="color:var(--text-secondary);font-size:10px;">(авто)</span></label>
+                            <input type="number" id="shiftErrCount" class="form-input" placeholder="авто">
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Время в ошибке (мин) <span style="color:var(--text-secondary);font-size:10px;">(авто)</span></label>
+                            <input type="number" id="shiftErrTime" class="form-input" placeholder="авто">
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">ВОТС (мин)</label>
+                            <input type="number" id="shiftVOTS" class="form-input" placeholder="69">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+                        <button class="btn btn-secondary" onclick="parseExcelData()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Парсить данные
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearExcelData()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            Очистить
+                        </button>
+                        <span id="autoCalcInfo" style="font-size:12px; color:var(--text-secondary);"></span>
+                    </div>
+
+                    <div id="excelPreview" style="overflow-x:auto;"></div>
+
+                    <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end; margin-top:12px;">
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Название файла (отчёт по ошибкам)</label>
+                            <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report">
+                        </div>
+                        <button class="btn btn-primary" onclick="generateExcel()" style="white-space:nowrap;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Скачать — Ошибки
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== БЛОК 3: ОТЧЁТ СМЕНЫ (таблица 2) ===== -->
+                <div style="border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px;">
+                    <h3 style="font-size:14px; font-weight:700; margin:0 0 12px 0; color:var(--text-primary);">Отчёт смены (Отгрузка / Приемка / Паллеты)</h3>
+
+                    <!-- ОТГРУЗКА -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin:0;">Отгрузка</h4>
+                            <button class="btn btn-secondary" style="padding:3px 10px; font-size:12px;" onclick="addShipmentRow()">+ Добавить</button>
+                        </div>
+                        <div id="shipmentRows"></div>
+                    </div>
+
+                    <!-- ПРИЕМКА -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin:0;">Приемка</h4>
+                            <button class="btn btn-secondary" style="padding:3px 10px; font-size:12px;" onclick="addReceiptRow()">+ Добавить</button>
+                        </div>
+                        <div id="receiptRows"></div>
+                    </div>
+
+                    <!-- ПАЛЛЕТЫ -->
+                    <div style="margin-bottom:16px;">
+                        <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Парные / Непарные паллеты</h4>
+                        <div class="form-group">
+                            <label class="form-label">Список паллет (ID\tD1 или ID\tD2) — такой же формат как в «Анализе паллет»</label>
+                            <textarea id="shiftPalletsInput" class="form-input" rows="5" placeholder="Вставьте список паллет&#10;&#10;L01X01Y73Z01D1&#10;L01X01Y73Z01D2&#10;L02X02Y74Z01D1&#10;..."></textarea>
+                        </div>
+                        <div id="shiftPalletsResult" style="display:none; margin-top:8px; font-size:13px; padding:10px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
+                            <div>Парные: <strong id="shiftPaired">0</strong> — <strong id="shiftPairedPct">0%</strong></div>
+                            <div>Не парные: <strong id="shiftUnpaired">0</strong> — <strong id="shiftUnpairedPct">0%</strong></div>
+                            <div>Общий кол паллет: <strong id="shiftTotal">0</strong></div>
+                        </div>
+                        <button class="btn btn-secondary" style="margin-top:8px;" onclick="calcShiftPallets()">Рассчитать паллеты</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end; margin-top:12px;">
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Название файла (отчёт смены)</label>
+                            <input type="text" id="shiftFileName" class="form-input" placeholder="shift_report">
+                        </div>
+                        <button class="btn btn-primary" onclick="generateShiftReport()" style="white-space:nowrap;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Скачать — Дашборд
+                        </button>
+                    </div>
                 </div>
 
                 <input type="hidden" id="excelVOshibke" value="">
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                    <div class="form-group">
-                        <label class="form-label">Название файла</label>
-                        <input type="text" id="excelFileName" class="form-input" placeholder="stackers_report">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Инженер WCS</label>
-                        <input type="text" id="excelInzhener" class="form-input" placeholder="Aser">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Тех служба</label>
-                        <input type="text" id="excelTex" class="form-input" placeholder="Лёша, Владимир, Ержан">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <button class="btn btn-secondary" onclick="parseExcelData()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Парсить данные
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearExcelData()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                        Очистить
-                    </button>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Добавленные строки</h2>
-                    </div>
-                    <div id="excelPreview" style="overflow-x: auto;"></div>
-                </div>
-            </div>
-
-            <!-- ===== ВТОРАЯ ТАБЛИЦА ===== -->
-            <div class="card" style="margin-top: 16px;">
-                <div class="card-header">
-                    <div>
-                        <h2 class="card-title">Отчёт смены (второй файл)</h2>
-                        <p class="card-subtitle">Отгрузка, Приемка, Ошибки, Паллеты</p>
-                    </div>
-                    <button class="btn btn-primary" onclick="generateShiftReport()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Скачать отчёт смены
-                    </button>
-                </div>
-
-                <!-- ОТГРУЗКА -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                        <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin:0;">Отгрузка</h3>
-                        <button class="btn btn-secondary" style="padding:4px 12px; font-size:12px;" onclick="addShipmentRow()">+ Добавить</button>
-                    </div>
-                    <div id="shipmentRows">
-                        <!-- строки добавляются динамически -->
-                    </div>
-                </div>
-
-                <!-- ПРИЕМКА -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                        <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin:0;">Приемка</h3>
-                        <button class="btn btn-secondary" style="padding:4px 12px; font-size:12px;" onclick="addReceiptRow()">+ Добавить</button>
-                    </div>
-                    <div id="receiptRows">
-                        <!-- строки добавляются динамически -->
-                    </div>
-                </div>
-
-                <!-- ОШИБКА -->
-                <div style="margin-bottom: 20px;">
-                    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Ошибка</h3>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div class="form-group">
-                            <label class="form-label">Количество ошибок</label>
-                            <input type="number" id="shiftErrCount" class="form-input" placeholder="32">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Время когда Робот был в ошибке (мин)</label>
-                            <input type="number" id="shiftErrTime" class="form-input" placeholder="390">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">ВОТС — время ожидания тех службы (мин)</label>
-                            <input type="number" id="shiftVOTS" class="form-input" placeholder="69">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Имя тех службы</label>
-                            <input type="text" id="shiftTechName" class="form-input" placeholder="Chinese">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Инженер WCS</label>
-                            <input type="text" id="shiftWcsName" class="form-input" placeholder="DIAS">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ПАРНЫЕ / НЕПАРНЫЕ ПАЛЛЕТЫ -->
-                <div style="margin-bottom: 20px;">
-                    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Парные / Непарные паллеты</h3>
-                    <div class="form-group">
-                        <label class="form-label">Вставьте данные паллет (каждый штрихкод на новой строке)</label>
-                        <textarea id="shiftPalletsInput" class="form-input" rows="6" placeholder="1234567890&#10;1234567890&#10;9876543210"></textarea>
-                    </div>
-                    <div id="shiftPalletsResult" style="display:none; margin-top:8px; font-size:13px; padding:10px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
-                        <div>Парные: <strong id="shiftPaired">0</strong> — <strong id="shiftPairedPct">0%</strong></div>
-                        <div>Не парные: <strong id="shiftUnpaired">0</strong> — <strong id="shiftUnpairedPct">0%</strong></div>
-                        <div>Общий кол паллет: <strong id="shiftTotal">0</strong></div>
-                    </div>
-                    <button class="btn btn-secondary" style="margin-top:8px;" onclick="calcShiftPallets()">Рассчитать паллеты</button>
-                </div>
             </div>
         </div>
 
@@ -1580,11 +1561,14 @@
 
         function clearAll() {
             document.getElementById('quickTimeInput').value = '';
-            document.getElementById('quickResult').textContent = '0';
+            document.getElementById('quickResultTable').style.display = 'none';
             document.getElementById('timeInput').value = '';
             document.getElementById('batchResults').classList.add('hidden');
             document.getElementById('palletInput').value = '';
             document.getElementById('palletResults').classList.add('hidden');
+            // Сохраняем очищенные значения
+            const saveIds = ['quickTimeInput','timeInput','palletInput'];
+            saveIds.forEach(id => localStorage.removeItem('field_' + id));
         }
 
         document.getElementById('timeInput').addEventListener('paste', () => {
@@ -1841,11 +1825,20 @@
             }
             document.getElementById('excelVOshibke').value = totalErrorMinutes + ' мин';
 
+            // Авторасчёт для дашборда: кол-во ошибок и время
+            document.getElementById('shiftErrCount').value = parsedRows.length;
+            document.getElementById('shiftErrTime').value = totalErrorMinutes;
+            document.getElementById('autoCalcInfo').textContent =
+                `Авто: ${parsedRows.length} ошибок, ${totalErrorMinutes} мин общего времени`;
+
             updateExcelPreview();
         }
 
         function clearExcelData() {
             excelData = [];
+            document.getElementById('excelInput').value = '';
+            localStorage.removeItem('field_excelInput');
+            localStorage.removeItem('excelData');
             updateExcelPreview();
         }
 
@@ -1895,19 +1888,19 @@
             const workbook = new ExcelJS.Workbook();
             const ws = workbook.addWorksheet('Отчёт');
 
-            // Цвета строго по требованиям
-            const GREY_HEADER = 'FFFFCCCC'; // светло-розовый для заголовков
-            const GREY_BG = 'FFBFBFBF';    // тёмный серый #BFBFBF для пустых ячеек
-            const RED = 'FFFF0000';         // #FF0000 ярко-красный F06
-            const YELLOW = 'FFFFFF00';      // #FFFF00 ярко-жёлтый тех
-            const GREEN = 'FF92D050';       // #92D050 производственный зелёный
-            const CYAN = 'FF00FFFF';        // #00FFFF голубой ВОТС
+            // Цвета
+            const GREY_HEADER = 'FFBFBFBF'; // серый для заголовков
+            const GREY_BG = 'FFBFBFBF';    // серый для пустых ячеек
+            const TIME_BG = 'FFBDD7EE';    // светло-синий фон колонки Время
+            const RED = 'FFFF0000';
+            const YELLOW = 'FFFFFF00';
+            const GREEN = 'FF92D050';
+            const LIGHT_GREEN = 'FF92D050';
+            const VOTS_BG = 'FF00B0F0';    // синий ВОТС
+            const ERR_BG = 'FFFF9999';     // розовый В ошибке
             const WHITE = 'FFFFFFFF';
             const BLACK = 'FF000000';
-            // Цвета текста для колонки Время
-            const TIME_RED = 'FFFF0000';
-            const TIME_GREEN = 'FF00B050';
-            const TIME_BLUE = 'FF0070C0';
+            const DESC_BG = 'FFD9D9D9';    // серый фон описаний легенды
 
             // Ширина колонок
             ws.columns = [
@@ -1961,54 +1954,40 @@
                 return '';
             }
 
-            // Проходим по событиям - каждое событие F06 создаёт 3 строки: F06, тех, готов к работе
+            const timeCellStyle = (fontColor) => ({
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: TIME_BG } },
+                font: { name: 'Arial', size: 8, bold: true, color: { argb: fontColor } },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
+            });
+
+            // Проходим по событиям — БЕЗ пустых строк между ними
             for (let i = 0; i < excelData.length; i++) {
                 const row = excelData[i];
 
-                // Пустая строка-разделитель перед каждым событием (кроме первого)
-                if (i > 0) {
-                    const emptyRow = ws.addRow(['', ...Array(10).fill('')]);
-                    emptyRow.height = 15;
-                    emptyRow.eachCell(cell => { cell.style = cellStyle(GREY_BG); });
-                }
-
-                // Строка F06 — фон серый, текст времени КРАСНЫЙ; ячейки F06 красные
+                // Строка F06 — светло-синий фон времени, красный текст; ячейки F06 красные
                 const f06Row = ws.addRow([row.time, ...row.statuses.map(s => s === 'F06' ? 'F06' : '')]);
                 f06Row.height = 15;
-                f06Row.getCell(1).style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
-                    font: { name: 'Arial', size: 8, bold: true, color: { argb: TIME_RED } },
-                    alignment: { horizontal: 'center', vertical: 'middle' },
-                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
-                };
+                f06Row.getCell(1).style = timeCellStyle(RED);
                 row.statuses.forEach((status, idx) => {
                     const cell = f06Row.getCell(idx + 2);
                     cell.style = cellStyle(status === 'F06' ? RED : GREY_BG, status === 'F06');
                 });
 
-                // Строка тех — фон серый, текст времени СИНИЙ; ячейки тех жёлтые
+                // Строка тех — светло-синий фон времени пустой; ячейки жёлтые
                 const texRow = ws.addRow(['', ...row.statuses.map(s => s === 'F06' ? 'тех' : '')]);
                 texRow.height = 15;
-                texRow.getCell(1).style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
-                    font: { name: 'Arial', size: 8, color: { argb: TIME_BLUE } },
-                    alignment: { horizontal: 'center', vertical: 'middle' },
-                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
-                };
+                texRow.getCell(1).style = timeCellStyle(BLACK);
+                texRow.getCell(1).value = '';
                 row.statuses.forEach((status, idx) => {
                     const cell = texRow.getCell(idx + 2);
                     cell.style = cellStyle(status === 'F06' ? YELLOW : GREY_BG);
                 });
 
-                // Строка готов к работе — фон серый, текст времени ЗЕЛЁНЫЙ; ячейки зелёные
+                // Строка готов к работе — светло-синий фон времени; ячейки зелёные
                 const readyRow = ws.addRow([row.endTime || '', ...row.statuses.map(s => s === 'F06' ? 'готов к работе' : '')]);
                 readyRow.height = 15;
-                readyRow.getCell(1).style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
-                    font: { name: 'Arial', size: 8, color: { argb: TIME_GREEN } },
-                    alignment: { horizontal: 'center', vertical: 'middle' },
-                    border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
-                };
+                readyRow.getCell(1).style = timeCellStyle(BLACK);
                 row.statuses.forEach((status, idx) => {
                     const cell = readyRow.getCell(idx + 2);
                     cell.style = cellStyle(status === 'F06' ? GREEN : GREY_BG);
@@ -2017,12 +1996,12 @@
 
             // Легенда справа (начиная с колонки 13)
             const legendStartCol = 13;
+            // Легенда точно как на картинке: F06 красный, готов к работе зелёный, ВОТС синий, В ошибке розовый
             const legendData = [
-                { color: RED,    text: 'F06',            desc: 'Код ошибки' },
-                { color: YELLOW, text: 'тех',            desc: 'Время захода техслужбы для устранения ошибки.' },
-                { color: GREEN,  text: 'готов к работе', desc: 'Время снятия ошибки со штабелера.' },
-                { color: CYAN,   text: 'ВОТС',           desc: 'Время ожидания технической службы.' },
-                { color: RED,    text: 'В ошибке',       desc: 'время простоя штабелера по причине ошибки.' },
+                { color: RED,      text: 'F06',            desc: 'Код ошибки' },
+                { color: GREEN,    text: 'готов к работе', desc: 'Время снятия ошибки со штабелера.' },
+                { color: VOTS_BG,  text: 'ВОТС',           desc: 'Время ожидания технической службы.' },
+                { color: ERR_BG,   text: 'В ошибке',       desc: 'Общее время простоя штабелера по причине ошибки.' },
             ];
 
             legendData.forEach((item, idx) => {
@@ -2041,13 +2020,13 @@
                 const descCell = wsRow.getCell(legendStartCol + 1);
                 descCell.value = item.desc;
                 descCell.style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: DESC_BG } },
                     font: { name: 'Arial', size: 8, color: { argb: BLACK } },
                     alignment: { horizontal: 'left', vertical: 'middle', wrapText: false },
                     border: { top: { style: 'thin', color: { argb: BLACK } }, bottom: { style: 'thin', color: { argb: BLACK } }, left: { style: 'thin', color: { argb: BLACK } }, right: { style: 'thin', color: { argb: BLACK } } }
                 };
 
-                ws.getColumn(legendStartCol).width = 16;
+                ws.getColumn(legendStartCol).width = 18;
                 ws.getColumn(legendStartCol + 1).width = 46;
             });
 
@@ -2157,19 +2136,35 @@
 
         function calcShiftPallets() {
             const input = document.getElementById('shiftPalletsInput').value;
-            const lines = input.trim().split('\n').map(l => l.trim()).filter(l => l);
-            const counts = {};
-            lines.forEach(l => { counts[l] = (counts[l] || 0) + 1; });
-            let paired = 0, unpaired = 0;
-            Object.values(counts).forEach(c => {
-                if (c % 2 === 0) paired += c;
-                else { paired += c - 1; unpaired += 1; }
-            });
-            const total = lines.length;
-            document.getElementById('shiftPaired').textContent = paired;
-            document.getElementById('shiftPairedPct').textContent = total ? (paired/total*100).toFixed(2)+'%' : '0%';
-            document.getElementById('shiftUnpaired').textContent = unpaired;
-            document.getElementById('shiftUnpairedPct').textContent = total ? (unpaired/total*100).toFixed(2)+'%' : '0%';
+            const lines = input.trim().split('\n').filter(l => l.trim());
+            if (!lines.length) return;
+
+            // Та же логика D1/D2 что и в analyzePallets
+            const pallets = {};
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.length < 3) continue;
+                const type = trimmed.slice(-2);
+                const id = trimmed.slice(0, -2);
+                if (!pallets[id]) pallets[id] = { d1: false, d2: false };
+                if (type === 'D1') pallets[id].d1 = true;
+                if (type === 'D2') pallets[id].d2 = true;
+            }
+
+            let pairedCount = 0, unpairedCount = 0;
+            for (const id in pallets) {
+                const p = pallets[id];
+                if (p.d1 && p.d2) pairedCount++;
+                else unpairedCount++;
+            }
+            const pairedRows = pairedCount * 2;
+            const unpairedRows = unpairedCount;
+            const total = pairedRows + unpairedRows;
+
+            document.getElementById('shiftPaired').textContent = pairedRows;
+            document.getElementById('shiftPairedPct').textContent = total ? (pairedRows/total*100).toFixed(2)+'%' : '0%';
+            document.getElementById('shiftUnpaired').textContent = unpairedRows;
+            document.getElementById('shiftUnpairedPct').textContent = total ? (unpairedRows/total*100).toFixed(2)+'%' : '0%';
             document.getElementById('shiftTotal').textContent = total;
             document.getElementById('shiftPalletsResult').style.display = 'block';
         }
@@ -2181,9 +2176,9 @@
             const errCount = document.getElementById('shiftErrCount').value || '';
             const errTime  = document.getElementById('shiftErrTime').value || '';
             const vots     = document.getElementById('shiftVOTS').value || '';
-            const techName = document.getElementById('shiftTechName').value || '';
-            const wcsName  = document.getElementById('shiftWcsName').value || '';
-            const fileName = (document.getElementById('excelFileName').value.trim() || 'shift_report') + '_смена.xlsx';
+            const techName = document.getElementById('excelTex').value || '';
+            const wcsName  = document.getElementById('excelInzhener').value || '';
+            const fileName = (document.getElementById('shiftFileName').value.trim() || 'shift_report') + '.xlsx';
 
             // Паллеты
             calcShiftPallets();
@@ -2316,11 +2311,119 @@
             URL.revokeObjectURL(url);
         }
 
-        // При загрузке страницы добавить по одной строке
+        // ===== СОХРАНЕНИЕ ДАННЫХ В localStorage =====
+
+        // IDs всех текстовых полей и textarea для автосохранения
+        const PERSIST_IDS = [
+            'quickTimeInput', 'timeInput', 'palletInput', 'excelInput',
+            'excelFileName', 'shiftFileName', 'excelInzhener', 'excelTex',
+            'shiftErrCount', 'shiftErrTime', 'shiftVOTS',
+            'shiftPalletsInput'
+        ];
+
+        function saveField(id) {
+            const el = document.getElementById(id);
+            if (el) localStorage.setItem('field_' + id, el.value);
+        }
+
+        function restoreField(id) {
+            const el = document.getElementById(id);
+            const saved = localStorage.getItem('field_' + id);
+            if (el && saved !== null) el.value = saved;
+        }
+
+        function saveExcelData() {
+            localStorage.setItem('excelData', JSON.stringify(excelData));
+        }
+
+        function restoreExcelData() {
+            try {
+                const saved = localStorage.getItem('excelData');
+                if (saved) {
+                    excelData = JSON.parse(saved);
+                    updateExcelPreview();
+                }
+            } catch(e) {}
+        }
+
+        // Сохраняем строки отгрузки/приёмки в localStorage
+        function saveShiftRows() {
+            const shipData = [];
+            document.querySelectorAll('[id^="shipRow"]').forEach(el => {
+                const idx = el.id.replace('shipRow', '');
+                shipData.push({
+                    kis:   (document.getElementById('shipKis'+idx)||{}).value||'',
+                    qty:   (document.getElementById('shipQty'+idx)||{}).value||'',
+                    start: (document.getElementById('shipStart'+idx)||{}).value||'',
+                    end:   (document.getElementById('shipEnd'+idx)||{}).value||''
+                });
+            });
+            const recvData = [];
+            document.querySelectorAll('[id^="recvRow"]').forEach(el => {
+                const idx = el.id.replace('recvRow', '');
+                recvData.push({
+                    kis:   (document.getElementById('recvKis'+idx)||{}).value||'',
+                    qty:   (document.getElementById('recvQty'+idx)||{}).value||'',
+                    start: (document.getElementById('recvStart'+idx)||{}).value||'',
+                    end:   (document.getElementById('recvEnd'+idx)||{}).value||''
+                });
+            });
+            localStorage.setItem('shipRows', JSON.stringify(shipData));
+            localStorage.setItem('recvRows', JSON.stringify(recvData));
+        }
+
+        function restoreShiftRows() {
+            try {
+                const shipData = JSON.parse(localStorage.getItem('shipRows') || '[]');
+                const recvData = JSON.parse(localStorage.getItem('recvRows') || '[]');
+                if (shipData.length === 0 && recvData.length === 0) {
+                    addShipmentRow(); addReceiptRow(); return;
+                }
+                shipData.forEach(r => {
+                    addShipmentRow();
+                    const idx = shipmentCount;
+                    if (document.getElementById('shipKis'+idx))   document.getElementById('shipKis'+idx).value   = r.kis;
+                    if (document.getElementById('shipQty'+idx))   document.getElementById('shipQty'+idx).value   = r.qty;
+                    if (document.getElementById('shipStart'+idx)) document.getElementById('shipStart'+idx).value = r.start;
+                    if (document.getElementById('shipEnd'+idx))   document.getElementById('shipEnd'+idx).value   = r.end;
+                });
+                recvData.forEach(r => {
+                    addReceiptRow();
+                    const idx = receiptCount;
+                    if (document.getElementById('recvKis'+idx))   document.getElementById('recvKis'+idx).value   = r.kis;
+                    if (document.getElementById('recvQty'+idx))   document.getElementById('recvQty'+idx).value   = r.qty;
+                    if (document.getElementById('recvStart'+idx)) document.getElementById('recvStart'+idx).value = r.start;
+                    if (document.getElementById('recvEnd'+idx))   document.getElementById('recvEnd'+idx).value   = r.end;
+                });
+            } catch(e) { addShipmentRow(); addReceiptRow(); }
+        }
+
+        // При загрузке страницы
         window.addEventListener('DOMContentLoaded', () => {
-            addShipmentRow();
-            addReceiptRow();
+            PERSIST_IDS.forEach(restoreField);
+            restoreExcelData();
+            restoreShiftRows();
+
+            // Вешаем автосохранение на все поля
+            PERSIST_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => saveField(id));
+            });
+
+            // Автосохранение строк отгрузки/приёмки при изменении
+            document.getElementById('shipmentRows').addEventListener('input', saveShiftRows);
+            document.getElementById('receiptRows').addEventListener('input', saveShiftRows);
         });
+
+        // Оборачиваем addShipmentRow/addReceiptRow чтобы сохранять после добавления
+        const _origAddShipment = addShipmentRow;
+        addShipmentRow = function() { _origAddShipment(); saveShiftRows(); };
+        const _origAddReceipt = addReceiptRow;
+        addReceiptRow = function() { _origAddReceipt(); saveShiftRows(); };
+
+        // Сохранять excelData при каждом парсинге
+        const _origParseExcel = parseExcelData;
+        parseExcelData = function() { _origParseExcel(); saveExcelData(); };
 
         // Загрузка настроек при запуске
         loadSettings();
