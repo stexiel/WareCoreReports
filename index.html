@@ -1894,6 +1894,7 @@
             localStorage.setItem('field_shiftErrTime',  totalErrorMinutes);
 
             updateExcelPreview();
+            saveExcelData();
         }
 
         function clearExcelData() {
@@ -2157,11 +2158,13 @@
         function addShipmentRow() {
             shipmentCount++;
             document.getElementById('shipmentRows').insertAdjacentHTML('beforeend', makeRowHtml('ship', shipmentCount));
+            saveShiftRows();
         }
 
         function addReceiptRow() {
             receiptCount++;
             document.getElementById('receiptRows').insertAdjacentHTML('beforeend', makeRowHtml('recv', receiptCount));
+            saveShiftRows();
         }
 
         function parseHMS(str) {
@@ -2487,16 +2490,6 @@
             document.getElementById('shipmentRows').addEventListener('input', saveShiftRows);
             document.getElementById('receiptRows').addEventListener('input', saveShiftRows);
         });
-
-        // Оборачиваем addShipmentRow/addReceiptRow чтобы сохранять после добавления
-        const _origAddShipment = addShipmentRow;
-        addShipmentRow = function() { _origAddShipment(); saveShiftRows(); };
-        const _origAddReceipt = addReceiptRow;
-        addReceiptRow = function() { _origAddReceipt(); saveShiftRows(); };
-
-        // Сохранять excelData при каждом парсинге
-        const _origParseExcel = parseExcelData;
-        parseExcelData = function() { _origParseExcel(); saveExcelData(); };
 
         // Загрузка настроек при запуске
         loadSettings();
