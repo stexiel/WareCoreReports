@@ -1954,7 +1954,7 @@
                 return;
             }
 
-            const vOshibkeRaw = parseInt(document.getElementById('excelVOshibke').value) || 0;
+            const vOshibkeRaw = parseInt(document.getElementById('excelVOshibke').value) || parseInt(localStorage.getItem('field_shiftErrTime')) || 0;
             const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || 0;
             const inzhener    = document.getElementById('excelInzhener').value || '';
             const tex         = document.getElementById('excelTex').value || '';
@@ -2269,8 +2269,8 @@
             const shipRows = collectRows('ship');
             const recvRows = collectRows('recv');
 
-            const errCount = document.getElementById('shiftErrCount').value || '';
-            const errTime  = document.getElementById('shiftErrTime').value || '';
+            const errCount = document.getElementById('shiftErrCount').value || localStorage.getItem('field_shiftErrCount') || '';
+            const errTime  = document.getElementById('shiftErrTime').value  || localStorage.getItem('field_shiftErrTime')  || '';
             const vots     = document.getElementById('shiftVOTS').value || '';
             const techName = document.getElementById('excelTex').value || '';
             const wcsName  = document.getElementById('excelInzhener').value || '';
@@ -2291,9 +2291,9 @@
             const GREEN_HDR  = 'FF92D050'; // зелёный заголовок Отгрузка/Приемка
             const GREY_HDR   = 'FFD9D9D9'; // серый заголовок таблицы
             const YELLOW_TOT = 'FFFFFF99'; // жёлтый итог
-            // Блок "Ошибка" верх — бежевый (входные данные)
-            const BEIGE_HDR  = 'FFFFF2CC'; // светло-бежевый заголовок
-            const BEIGE_ROW  = 'FFFFF2CC'; // бежевые строки
+            // Блок "Ошибка" верх — розовый (входные данные)
+            const BEIGE_HDR  = 'FFFFCCCC'; // розовый заголовок
+            const BEIGE_ROW  = 'FFFFCCCC'; // розовые строки
             // Блок "Паллеты" низ — голубой (результаты)
             const BLUE_HDR   = 'FFDAE8FC'; // голубой заголовок
             const BLUE_ROW   = 'FFDAE8FC'; // голубые строки
@@ -2455,8 +2455,8 @@
                     // Восстанавливаем стат-карточки
                     const errCount = localStorage.getItem('field_shiftErrCount') || '';
                     const errTime  = localStorage.getItem('field_shiftErrTime') || '';
-                    if (errCount) document.getElementById('statErrCount').textContent = errCount;
-                    if (errTime)  document.getElementById('statErrTime').textContent  = errTime;
+                    if (errCount) { document.getElementById('statErrCount').textContent = errCount; document.getElementById('shiftErrCount').value = errCount; }
+                    if (errTime)  { document.getElementById('statErrTime').textContent  = errTime;  document.getElementById('shiftErrTime').value  = errTime;  document.getElementById('excelVOshibke').value = errTime; }
                     if (excelData.length) document.getElementById('statEvents').textContent = excelData.length;
                 }
             } catch(e) {}
