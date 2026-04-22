@@ -1904,17 +1904,22 @@
         }
 
         function clearExcelData() {
-            excelData = [];
-            document.getElementById('excelInput').value = '';
-            document.getElementById('statErrCount').textContent = '—';
-            document.getElementById('statErrTime').textContent = '—';
-            document.getElementById('statEvents').textContent = '—';
-            document.getElementById('shiftErrCount').value = '';
-            document.getElementById('shiftErrTime').value = '';
-            document.getElementById('excelVOshibke').value = '';
-            localStorage.removeItem('field_excelInput');
-            localStorage.removeItem('excelData');
-            updateExcelPreview();
+            try {
+                excelData = [];
+                const ei = document.getElementById('excelInput');
+                if (ei) ei.value = '';
+                const sc = document.getElementById('statErrCount'); if (sc) sc.textContent = '—';
+                const st = document.getElementById('statErrTime');  if (st) st.textContent = '—';
+                const se = document.getElementById('statEvents');   if (se) se.textContent = '—';
+                const ec = document.getElementById('shiftErrCount'); if (ec) ec.value = '';
+                const et = document.getElementById('shiftErrTime');  if (et) et.value = '';
+                const vo = document.getElementById('excelVOshibke'); if (vo) vo.value = '';
+                localStorage.removeItem('field_excelInput');
+                localStorage.removeItem('excelData');
+                localStorage.removeItem('field_shiftErrCount');
+                localStorage.removeItem('field_shiftErrTime');
+                updateExcelPreview();
+            } catch(e) { console.error('clearExcelData error:', e); }
         }
 
         function updateExcelPreview() {
