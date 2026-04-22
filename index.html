@@ -1865,9 +1865,15 @@
                 statuses:  Array(10).fill('').map((_, i) => i + 1 === row.stacker ? 'F06' : '')
             }));
 
-            // Сортируем по реальной дате+времени — правильно обрабатывает переход через полночь
-            // Ночная смена 20:00→08:00: события 00:xx идут ПОСЛЕ 23:xx благодаря полной дате ISO
-            excelData.sort((a, b) => new Date(a.startISO).getTime() - new Date(b.startISO).getTime());
+            // Сортируем с учётом ночной смены 20:00–08:00:
+            // Часы 00–07 (после полуночи) принадлежат ПРОДОЛЖЕНИЮ ночной смены → добавляем 24ч для сортировки
+            function shiftSortKey(isoStr) {
+                const d = new Date(isoStr);
+                const h = d.getHours();
+                if (h < 8) return d.getTime() + 24 * 3600 * 1000;
+                return d.getTime();
+            }
+            excelData.sort((a, b) => shiftSortKey(a.startISO) - shiftSortKey(b.startISO));
 
             // Автоматически считаем "В ошибке" — сумма разниц времени
             let totalErrorMinutes = 0;
@@ -2086,25 +2092,35 @@
 
             legendData.forEach((item, idx) => {
                 const wsRow = ws.getRow(idx + 2);
+                // Метка (F06, готов к работе, ВОТС, В ошибке)
+                // ВОТС и В ошибке — белый фон, красный текст; F06 и готов к работе — цветной фон, чёрный текст
+                const isRedLabel = item.text === 'ВОТС' || item.text === 'В ошибке';
                 const labelCell = wsRow.getCell(legendStartCol);
                 labelCell.value = item.text;
                 labelCell.style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: item.color } },
-                    font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: isRedLabel ? WHITE : item.color } },
+                    font: { name: FONT, size: FSIZE, bold: true, color: { argb: isRedLabel ? RED : BLACK } },
                     alignment: { horizontal: 'center', vertical: 'middle' },
                     border: BORDER
                 };
+                // Описание — серый фон, чёрный жирный текст (как фото 5)
                 const descCell = wsRow.getCell(legendStartCol + 1);
                 descCell.value = item.desc;
                 descCell.style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: WHITE } },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: GREY_BG } },
                     font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
                     alignment: { horizontal: 'left', vertical: 'middle' },
                     border: BORDER
                 };
             });
 
-            // Итоги — В ошибке и ВОТС в формате ЧЧ:ММ:СС
+            // Итоги — без фона, красный жирный текст Calibri 12
+            const redStyle = {
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: WHITE } },
+                font: { name: FONT, size: FSIZE, bold: true, color: { argb: RED } },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: BORDER
+            };
             const totals = [
                 ['В ошибке', minsToHMS(vOshibkeRaw)],
                 ['ВОТС',     minsToHMS(vOTSRaw)],
@@ -2115,13 +2131,8 @@
             totals.forEach(([label, value]) => {
                 const r = ws.addRow([label, value]);
                 r.height = 18;
-                r.getCell(1).style = cellStyle(GREY_BG, true);
-                r.getCell(2).style = {
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: WHITE } },
-                    font: { name: FONT, size: FSIZE, bold: true, color: { argb: BLACK } },
-                    alignment: { horizontal: 'center', vertical: 'middle' },
-                    border: BORDER
-                };
+                r.getCell(1).style = redStyle;
+                r.getCell(2).style = redStyle;
             });
 
             // Скачиваем
