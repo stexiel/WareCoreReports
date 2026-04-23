@@ -769,6 +769,35 @@
                 </div>
             </div>
 
+            <div class="nav-section">
+                <div class="nav-section-title">Инструменты</div>
+                <div class="nav-item" onclick="switchTab('translator')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 8l6 6"/>
+                        <path d="M4 14l6-6 2-3"/>
+                        <path d="M2 5h12"/>
+                        <path d="M7 2h1"/>
+                        <path d="M22 22l-5-10-5 10"/>
+                        <path d="M14 18h6"/>
+                    </svg>
+                    Переводчик
+                </div>
+                <div class="nav-item" onclick="switchTab('history')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    История
+                </div>
+                <div class="nav-item" onclick="switchTab('settings')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    Настройки
+                </div>
+            </div>
+
         </nav>
 
     </aside>
@@ -933,6 +962,126 @@
                     <h2 class="card-title">История расчётов</h2>
                 </div>
                 <p style="color: var(--text-secondary); padding: 20px;">История расчётов пока пуста.</p>
+            </div>
+        </div>
+
+        <div id="translatorTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Переводчик</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Исходный язык</label>
+                        <select id="sourceLang" class="form-input">
+                            <option value="zh">🇨🇳 Китайский</option>
+                            <option value="en">🇬🇧 Английский</option>
+                            <option value="ru">🇷🇺 Русский</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Целевой язык</label>
+                        <select id="targetLang" class="form-input">
+                            <option value="ru">🇷🇺 Русский</option>
+                            <option value="en">🇬🇧 Английский</option>
+                            <option value="zh">🇨🇳 Китайский</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Исходный текст</label>
+                        <textarea id="sourceText" class="form-input" rows="6" placeholder="Введите текст для перевода..." style="resize: vertical; font-size: 18px; font-weight: 700;" onpaste="setTimeout(translateText, 100)" oninput="setTimeout(translateText, 500)"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Перевод</label>
+                        <textarea id="translatedText" class="form-input" rows="6" readonly placeholder="Перевод появится здесь..." style="resize: vertical; background: var(--background); font-size: 18px; font-weight: 700;"></textarea>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="translateText()" style="width: 100%; padding: 12px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 8l6 6"/>
+                        <path d="M4 14l6-6 2-3"/>
+                        <path d="M2 5h12"/>
+                        <path d="M7 2h1"/>
+                        <path d="M22 22l-5-10-5 10"/>
+                        <path d="M14 18h6"/>
+                    </svg>
+                    Перевести
+                </button>
+
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">История переводов</h3>
+                    <div id="translationHistory" style="display: flex; flex-direction: column; gap: 12px;">
+                        <p style="color: var(--text-secondary); font-size: 14px;">История пуста</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Настройки</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Тема оформления</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <button class="theme-btn" onclick="setTheme('light')" id="lightThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);"></div>
+                            <span>Светлая</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('dark')" id="darkThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);"></div>
+                            <span>Тёмная</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('lime')" id="limeThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);"></div>
+                            <span>Лаймовая</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('purple')" id="purpleThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"></div>
+                            <span>Фиолетовая</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Размер шрифта</label>
+                    <select id="fontSizeSelector" onchange="setFontSize(this.value)" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); font-size: 14px; cursor: pointer; width: 100%;">
+                        <option value="small">Мелкий</option>
+                        <option value="medium" selected>Средний</option>
+                        <option value="large">Крупный</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Автоматический расчёт</label>
+                    <div class="toggle-option">
+                        <input type="checkbox" id="autoCalcCheckbox" onchange="setAutoCalc(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>Автоматически рассчитывать при вставке данных</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Показывать подсказки</label>
+                    <div class="toggle-option">
+                        <input type="checkbox" id="showHintsCheckbox" onchange="setShowHints(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>Показывать подсказки и примеры</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Сохранять историю расчётов</label>
+                    <div class="toggle-option">
+                        <input type="checkbox" id="saveHistoryCheckbox" onchange="setSaveHistory(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>Сохранять историю расчётов</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1511,6 +1660,9 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
+            document.getElementById('translatorTab').classList.add('hidden');
+            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById('settingsTab').classList.add('hidden');
 
             document.getElementById(tab + 'Tab').classList.remove('hidden');
 
@@ -1551,8 +1703,7 @@
 
         function loadFontSize() {
             const savedSize = localStorage.getItem('fontSize') || 'medium';
-            const selector = document.getElementById('fontSizeSelector');
-            if (selector) selector.value = savedSize;
+            document.getElementById('fontSizeSelector').value = savedSize;
             setFontSize(savedSize);
         }
 
@@ -1609,6 +1760,9 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
+            document.getElementById('translatorTab').classList.add('hidden');
+            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById('settingsTab').classList.add('hidden');
 
             // Показываем сохранённую вкладку
             const tab = document.getElementById(savedTab + 'Tab');
@@ -2396,6 +2550,93 @@
             localStorage.setItem('recvRows', JSON.stringify(recvData));
         }
 
+        // Перевод текста (MyMemory API)
+        async function translateText() {
+            const sourceText = document.getElementById('sourceText').value.trim();
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const translatedTextarea = document.getElementById('translatedText');
+
+            if (!sourceText) {
+                translatedTextarea.value = 'Введите текст для перевода';
+                return;
+            }
+
+            if (sourceLang === targetLang) {
+                translatedTextarea.value = sourceText;
+                return;
+            }
+
+            translatedTextarea.value = 'Перевод...';
+            translatedTextarea.disabled = true;
+
+            try {
+                const langPair = `${sourceLang}|${targetLang}`;
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${langPair}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.responseStatus === 200) {
+                    const translated = data.responseData.translatedText;
+                    translatedTextarea.value = translated;
+                    addToTranslationHistory(sourceText, translated, sourceLang, targetLang);
+                } else {
+                    translatedTextarea.value = 'Ошибка перевода. Попробуйте снова.';
+                }
+            } catch (error) {
+                translatedTextarea.value = 'Ошибка соединения. Проверьте интернет.';
+            } finally {
+                translatedTextarea.disabled = false;
+            }
+        }
+
+        function addToTranslationHistory(source, translated, fromLang, toLang) {
+            const history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+            history.unshift({
+                source,
+                translated,
+                fromLang,
+                toLang,
+                date: new Date().toISOString()
+            });
+            if (history.length > 50) history.pop(); // Храним только последние 50
+            localStorage.setItem('translationHistory', JSON.stringify(history));
+            renderTranslationHistory();
+        }
+
+        function renderTranslationHistory() {
+            const historyContainer = document.getElementById('translationHistory');
+            const history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">История пуста</p>';
+                return;
+            }
+
+            const langNames = { zh: '🇨🇳 Китайский', en: '🇬🇧 Английский', ru: '🇷🇺 Русский' };
+
+            historyContainer.innerHTML = history.map((item, index) => `
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer;" onclick="copyTranslation(${index})">
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                        ${langNames[item.fromLang]} → ${langNames[item.toLang]} • ${new Date(item.date).toLocaleString('ru-RU')}
+                    </div>
+                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${item.source.substring(0, 100)}${item.source.length > 100 ? '...' : ''}</div>
+                    <div style="color: var(--text-secondary);">${item.translated.substring(0, 100)}${item.translated.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function copyTranslation(index) {
+            const history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+            const item = history[index];
+            if (!item) return;
+
+            navigator.clipboard.writeText(item.translated).then(() => {
+                alert('Перевод скопирован в буфер обмена');
+            });
+        }
+
         function restoreShiftRows() {
             try {
                 const shipData = JSON.parse(localStorage.getItem('shipRows') || '[]');
@@ -2427,6 +2668,7 @@
             PERSIST_IDS.forEach(restoreField);
             restoreExcelData();
             restoreShiftRows();
+            renderTranslationHistory();
 
             // Вешаем автосохранение на все поля
             PERSIST_IDS.forEach(id => {
