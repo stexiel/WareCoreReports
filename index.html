@@ -1511,8 +1511,6 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
-            document.getElementById('historyTab').classList.add('hidden');
-            document.getElementById('settingsTab').classList.add('hidden');
 
             document.getElementById(tab + 'Tab').classList.remove('hidden');
 
@@ -1553,7 +1551,8 @@
 
         function loadFontSize() {
             const savedSize = localStorage.getItem('fontSize') || 'medium';
-            document.getElementById('fontSizeSelector').value = savedSize;
+            const selector = document.getElementById('fontSizeSelector');
+            if (selector) selector.value = savedSize;
             setFontSize(savedSize);
         }
 
@@ -1610,11 +1609,10 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
-            document.getElementById('historyTab').classList.add('hidden');
-            document.getElementById('settingsTab').classList.add('hidden');
 
             // Показываем сохранённую вкладку
-            document.getElementById(savedTab + 'Tab').classList.remove('hidden');
+            const tab = document.getElementById(savedTab + 'Tab');
+            if (tab) tab.classList.remove('hidden');
         }
 
         function analyzePallets() {
