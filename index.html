@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WareCore Reports</title>
     <link rel="icon" href="Снимок_экрана_2026-04-19_043623-removebg-preview.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="WareCore Reports">
+    <link rel="apple-touch-icon" href="Снимок_экрана_2026-04-19_043623-removebg-preview.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -809,6 +816,14 @@
                 <p class="header-subtitle">Вычисление разницы между временными отметками</p>
             </div>
             <div class="header-actions">
+                <button id="installBtn" class="btn btn-primary" onclick="installApp()" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Установить приложение
+                </button>
                 <button class="btn btn-secondary" onclick="clearAll()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
@@ -2679,7 +2694,41 @@
             // Автосохранение строк отгрузки/приёмки при изменении
             document.getElementById('shipmentRows').addEventListener('input', saveShiftRows);
             document.getElementById('receiptRows').addEventListener('input', saveShiftRows);
+
+            // PWA: Регистрация Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker зарегистрирован', reg))
+                    .catch(err => console.log('Service Worker ошибка', err));
+            }
+
+            // PWA: Обработка установки приложения
+            let deferredPrompt;
+            const installBtn = document.getElementById('installBtn');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.style.display = 'inline-flex';
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            });
         });
+
+        // PWA: Функция установки приложения
+        async function installApp() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installBtn.style.display = 'none';
+            }
+            deferredPrompt = null;
+        }
+
 
         // Загрузка настроек при запуске
         loadSettings();

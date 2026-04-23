@@ -1,0 +1,24 @@
+{
+  "name": "WareCore Reports",
+  "short_name": "WareCore",
+  "description": "Система генерации отчётов для склада",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "Снимок_экрана_2026-04-19_043623-removebg-preview.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "Снимок_экрана_2026-04-19_043623-removebg-preview.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
