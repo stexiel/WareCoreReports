@@ -771,6 +771,17 @@
 
             <div class="nav-section">
                 <div class="nav-section-title">Инструменты</div>
+                <div class="nav-item" onclick="switchTab('translator')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 8l6 6"/>
+                        <path d="M4 14l6-6 2-3"/>
+                        <path d="M2 5h12"/>
+                        <path d="M7 2h1"/>
+                        <path d="M22 22l-5-10-5 10"/>
+                        <path d="M14 18h6"/>
+                    </svg>
+                    Переводчик
+                </div>
                 <div class="nav-item" onclick="switchTab('history')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
@@ -1165,6 +1176,56 @@
                 <input type="hidden" id="excelVOshibke" value="">
                 <input type="hidden" id="shiftErrCount" value="">
                 <input type="hidden" id="shiftErrTime" value="">
+            </div>
+        </div>
+
+        <div id="translatorTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Переводчик</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Исходный язык</label>
+                        <select id="sourceLang" class="form-input">
+                            <option value="zh">🇨🇳 Китайский</option>
+                            <option value="en">🇬🇧 Английский</option>
+                            <option value="ru">🇷🇺 Русский</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Целевой язык</label>
+                        <select id="targetLang" class="form-input">
+                            <option value="ru">🇷🇺 Русский</option>
+                            <option value="en">🇬🇧 Английский</option>
+                            <option value="zh">🇨🇳 Китайский</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Исходный текст</label>
+                        <textarea id="sourceText" class="form-input" rows="6" placeholder="Введите текст для перевода..." style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Перевод</label>
+                        <textarea id="translatedText" class="form-input" rows="6" readonly placeholder="Перевод появится здесь..." style="resize: vertical; background: var(--background);"></textarea>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="translateText()" style="width: 100%; padding: 12px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 8l6 6"/>
+                        <path d="M4 14l6-6 2-3"/>
+                        <path d="M2 5h12"/>
+                        <path d="M7 2h1"/>
+                        <path d="M22 22l-5-10-5 10"/>
+                        <path d="M14 18h6"/>
+                    </svg>
+                    Перевести
+                </button>
             </div>
         </div>
 
@@ -2315,9 +2376,10 @@
                 {width:26},{width:20},{width:16},{width:18},{width:22}
             ];
 
-            // Заголовок секции (слитый по 5 колонкам)
-            function addSectionHeader(title, bgColor) {
-                const r = ws.addRow([title]);
+            // Заголовок секции с merge
+            function addSectionHeader(title, bgColor, cols=5) {
+                const r = ws.addRow([title,'','','','']);
+                if (cols > 1) ws.mergeCells(`A${r.number}:${String.fromCharCode(64+cols)}${r.number}`);
                 r.getCell(1).style = { ...cs(bgColor, true, 'left') };
                 r.height = 20;
             }
@@ -2343,9 +2405,11 @@
                     if (row.diffMin !== '') totalMin += parseInt(row.diffMin) || 0;
                 });
                 const tr = ws.addRow(['Общее количество', totalQty, '', '', `${totalMin} мин`]);
-                [1,2,3,4,5].forEach(col => {
-                    tr.getCell(col).style = cs(YELLOW_TOT, true, col === 1 ? 'left' : 'center');
-                });
+                tr.getCell(1).style = cs(YELLOW_TOT, true, 'left');
+                tr.getCell(2).style = cs(YELLOW_TOT, true, 'center');
+                tr.getCell(3).style = cs(YELLOW_TOT, false, 'center');
+                tr.getCell(4).style = cs(YELLOW_TOT, false, 'center');
+                tr.getCell(5).style = cs(YELLOW_TOT, true, 'center');
                 tr.height = 16;
             }
 
@@ -2361,12 +2425,8 @@
             addDataRows(recvRows);
             ws.addRow([]);
 
-            // ── БЛОК 1: ОШИБКА (бежевый — входные данные) ────────
-            {
-                const hdr = ws.addRow(['Ошибка']);
-                hdr.getCell(1).style = { ...cs(BEIGE_HDR, true, 'left') };
-                hdr.height = 20;
-            }
+            // ── БЛОК 1: ОШИБКА (розовый — 2 колонки)
+            addSectionHeader('Ошибка', BEIGE_HDR, 2);
             const errRows = [
                 ['Количество ошибок',                errCount],
                 ['Время когда Робот был в ошибке',   `${errTime} минут`],
@@ -2385,12 +2445,8 @@
             // Визуальный разрыв между блоками
             ws.addRow([]);
 
-            // ── БЛОК 2: ПАЛЛЕТЫ (голубой — результаты) ───────────
-            {
-                const hdr = ws.addRow(['Парные / Непарные паллеты']);
-                hdr.getCell(1).style = { ...cs(BLUE_HDR, true, 'left') };
-                hdr.height = 20;
-            }
+            // ── БЛОК 2: ПАЛЛЕТЫ (голубой — 3 колонки)
+            addSectionHeader('Парные / Непарные паллеты', BLUE_HDR, 3);
             // Проценты в той же строке рядом с числами (колонка 3)
             const pallData = [
                 { label:'Парные',          qty:paired,   pct:pairedPct,   bg:BLUE_ROW },
@@ -2479,6 +2535,45 @@
             });
             localStorage.setItem('shipRows', JSON.stringify(shipData));
             localStorage.setItem('recvRows', JSON.stringify(recvData));
+        }
+
+        // Функция перевода текста (MyMemory API - бесплатно без ключа)
+        async function translateText() {
+            const sourceText = document.getElementById('sourceText').value.trim();
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const translatedTextarea = document.getElementById('translatedText');
+
+            if (!sourceText) {
+                translatedTextarea.value = 'Введите текст для перевода';
+                return;
+            }
+
+            if (sourceLang === targetLang) {
+                translatedTextarea.value = sourceText;
+                return;
+            }
+
+            translatedTextarea.value = 'Перевод...';
+            translatedTextarea.disabled = true;
+
+            try {
+                const langPair = `${sourceLang}|${targetLang}`;
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${langPair}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.responseStatus === 200) {
+                    translatedTextarea.value = data.responseData.translatedText;
+                } else {
+                    translatedTextarea.value = 'Ошибка перевода. Попробуйте снова.';
+                }
+            } catch (error) {
+                translatedTextarea.value = 'Ошибка соединения. Проверьте интернет.';
+            } finally {
+                translatedTextarea.disabled = false;
+            }
         }
 
         function restoreShiftRows() {
