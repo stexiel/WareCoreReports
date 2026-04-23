@@ -769,34 +769,6 @@
                 </div>
             </div>
 
-            <div class="nav-section">
-                <div class="nav-section-title">Инструменты</div>
-                <div class="nav-item" onclick="switchTab('translator')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 8l6 6"/>
-                        <path d="M4 14l6-6 2-3"/>
-                        <path d="M2 5h12"/>
-                        <path d="M7 2h1"/>
-                        <path d="M22 22l-5-10-5 10"/>
-                        <path d="M14 18h6"/>
-                    </svg>
-                    Переводчик
-                </div>
-                <div class="nav-item" onclick="switchTab('history')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    История
-                </div>
-                <div class="nav-item" onclick="switchTab('settings')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                    Настройки
-                </div>
-            </div>
         </nav>
 
     </aside>
@@ -1176,119 +1148,6 @@
                 <input type="hidden" id="excelVOshibke" value="">
                 <input type="hidden" id="shiftErrCount" value="">
                 <input type="hidden" id="shiftErrTime" value="">
-            </div>
-        </div>
-
-        <div id="translatorTab" class="hidden">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Переводчик</h2>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                    <div class="form-group">
-                        <label class="form-label">Исходный язык</label>
-                        <select id="sourceLang" class="form-input">
-                            <option value="zh">🇨🇳 Китайский</option>
-                            <option value="en">🇬🇧 Английский</option>
-                            <option value="ru">🇷🇺 Русский</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Целевой язык</label>
-                        <select id="targetLang" class="form-input">
-                            <option value="ru">🇷🇺 Русский</option>
-                            <option value="en">🇬🇧 Английский</option>
-                            <option value="zh">🇨🇳 Китайский</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                    <div class="form-group">
-                        <label class="form-label">Исходный текст</label>
-                        <textarea id="sourceText" class="form-input" rows="6" placeholder="Введите текст для перевода..." style="resize: vertical;" onpaste="setTimeout(translateText, 100)" oninput="setTimeout(translateText, 500)"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Перевод</label>
-                        <textarea id="translatedText" class="form-input" rows="6" readonly placeholder="Перевод появится здесь..." style="resize: vertical; background: var(--background);"></textarea>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" onclick="translateText()" style="width: 100%; padding: 12px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 8l6 6"/>
-                        <path d="M4 14l6-6 2-3"/>
-                        <path d="M2 5h12"/>
-                        <path d="M7 2h1"/>
-                        <path d="M22 22l-5-10-5 10"/>
-                        <path d="M14 18h6"/>
-                    </svg>
-                    Перевести
-                </button>
-            </div>
-        </div>
-
-        <div id="settingsTab" class="hidden">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Настройки</h2>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Тема оформления</label>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                        <button class="theme-btn" onclick="setTheme('light')" id="lightThemeBtn">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);"></div>
-                            <span>Светлая</span>
-                        </button>
-                        <button class="theme-btn" onclick="setTheme('dark')" id="darkThemeBtn">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);"></div>
-                            <span>Тёмная</span>
-                        </button>
-                        <button class="theme-btn" onclick="setTheme('lime')" id="limeThemeBtn">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);"></div>
-                            <span>Лаймовая</span>
-                        </button>
-                        <button class="theme-btn" onclick="setTheme('purple')" id="purpleThemeBtn">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"></div>
-                            <span>Фиолетовая</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Размер шрифта</label>
-                    <select id="fontSizeSelector" onchange="setFontSize(this.value)" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); font-size: 14px; cursor: pointer; width: 100%;">
-                        <option value="small">Мелкий</option>
-                        <option value="medium" selected>Средний</option>
-                        <option value="large">Крупный</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Автоматический расчёт</label>
-                    <div class="toggle-option">
-                        <input type="checkbox" id="autoCalcCheckbox" onchange="setAutoCalc(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
-                        <span>Автоматически рассчитывать при вставке данных</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Показывать подсказки</label>
-                    <div class="toggle-option">
-                        <input type="checkbox" id="showHintsCheckbox" onchange="setShowHints(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
-                        <span>Показывать подсказки и примеры</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Сохранять историю расчётов</label>
-                    <div class="toggle-option">
-                        <input type="checkbox" id="saveHistoryCheckbox" onchange="setSaveHistory(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
-                        <span>Сохранять историю расчётов</span>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
@@ -2019,7 +1878,7 @@
             }
 
             const vOshibkeRaw = parseInt(document.getElementById('excelVOshibke').value) || parseInt(localStorage.getItem('field_shiftErrTime')) || 0;
-            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || 0;
+            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || parseInt(localStorage.getItem('field_shiftVOTS')) || 0;
             const inzhener    = document.getElementById('excelInzhener').value || '';
             const tex         = document.getElementById('excelTex').value || '';
             const fileName    = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
@@ -2329,7 +2188,7 @@
 
             const errCount = document.getElementById('shiftErrCount').value || localStorage.getItem('field_shiftErrCount') || '';
             const errTime  = document.getElementById('shiftErrTime').value  || localStorage.getItem('field_shiftErrTime')  || '';
-            const vots     = document.getElementById('shiftVOTS').value || '';
+            const vots     = document.getElementById('shiftVOTS').value || localStorage.getItem('field_shiftVOTS') || '';
             const techName = document.getElementById('excelTex').value || '';
             const wcsName  = document.getElementById('excelInzhener').value || '';
             const fileName = (document.getElementById('shiftFileName').value.trim() || 'shift_report') + '.xlsx';
@@ -2506,6 +2365,8 @@
                     const errTime  = localStorage.getItem('field_shiftErrTime') || '';
                     if (errCount) { document.getElementById('statErrCount').textContent = errCount; document.getElementById('shiftErrCount').value = errCount; }
                     if (errTime)  { document.getElementById('statErrTime').textContent  = errTime;  document.getElementById('shiftErrTime').value  = errTime;  document.getElementById('excelVOshibke').value = errTime; }
+                    const vots = localStorage.getItem('field_shiftVOTS');
+                    if (vots) { const sv = document.getElementById('shiftVOTS'); if (sv) sv.value = vots; }
                     if (excelData.length) document.getElementById('statEvents').textContent = excelData.length;
                 }
             } catch(e) {}
@@ -2535,45 +2396,6 @@
             });
             localStorage.setItem('shipRows', JSON.stringify(shipData));
             localStorage.setItem('recvRows', JSON.stringify(recvData));
-        }
-
-        // Функция перевода текста (MyMemory API - бесплатно без ключа)
-        async function translateText() {
-            const sourceText = document.getElementById('sourceText').value.trim();
-            const sourceLang = document.getElementById('sourceLang').value;
-            const targetLang = document.getElementById('targetLang').value;
-            const translatedTextarea = document.getElementById('translatedText');
-
-            if (!sourceText) {
-                translatedTextarea.value = 'Введите текст для перевода';
-                return;
-            }
-
-            if (sourceLang === targetLang) {
-                translatedTextarea.value = sourceText;
-                return;
-            }
-
-            translatedTextarea.value = 'Перевод...';
-            translatedTextarea.disabled = true;
-
-            try {
-                const langPair = `${sourceLang}|${targetLang}`;
-                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${langPair}`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.responseStatus === 200) {
-                    translatedTextarea.value = data.responseData.translatedText;
-                } else {
-                    translatedTextarea.value = 'Ошибка перевода. Попробуйте снова.';
-                }
-            } catch (error) {
-                translatedTextarea.value = 'Ошибка соединения. Проверьте интернет.';
-            } finally {
-                translatedTextarea.disabled = false;
-            }
         }
 
         function restoreShiftRows() {
