@@ -2838,11 +2838,24 @@
                 return str;
             }
             
-            // Извлекаем КИС из номера документа (например, "23.04.2026 день АLЦ-0154462 - мц3 (1)" -> "ALЦ-0154462")
+            // Извлекаем КИС из номера документа
+            // Примеры:
+            // "23.04.2026 день АLЦ-0154462 - мц3 (1)" -> "ALЦ-0154462"
+            // "2026.04.23 ночь 0155183 (2)" -> "ALЦ-0155183"
+            // "8422 арт" -> "ALЦ-8422"
             function extractKISFromDocNum(docNum) {
                 if (!docNum) return '';
-                const match = docNum.toString().match(/[AА]LЦ-(\d+)/);
-                return match ? 'ALЦ-' + match[1] : '';
+                const str = docNum.toString().trim();
+                
+                // Сначала ищем ALЦ- или АLЦ-
+                const matchWithPrefix = str.match(/[AА]LЦ-(\d+)/);
+                if (matchWithPrefix) return 'ALЦ-' + matchWithPrefix[1];
+                
+                // Если нет ALЦ-, ищем просто цифры (например, 0155183, 8422)
+                const matchDigits = str.match(/\b(\d{4,})\b/);
+                if (matchDigits) return 'ALЦ-' + matchDigits[1];
+                
+                return '';
             }
             
             // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" -> "HH:MM:SS"
