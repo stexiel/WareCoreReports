@@ -1468,9 +1468,10 @@
                             <div id="statErrTime" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
                             <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">мин · авто</div>
                         </div>
-                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px;">
-                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ВОТС (мин)</div>
-                            <input type="number" id="shiftVOTS" class="form-input" placeholder="0" readonly style="width:100%; text-align:center; font-size:18px; font-weight:700; background:var(--background);">
+                        <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+                            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">ВОТС (мин)</div>
+                            <div id="shiftVOTS" style="font-size:22px; font-weight:700; color:var(--text-primary);">—</div>
+                            <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">мин · авто</div>
                         </div>
                     </div>
 
@@ -2284,7 +2285,7 @@
 
             // ВОТС — время ожидания тех службы
             const sv = document.getElementById('shiftVOTS');
-            if (sv) sv.value = totalVOTSMinutes;
+            if (sv) sv.textContent = totalVOTSMinutes;
             localStorage.setItem('field_shiftVOTS', totalVOTSMinutes);
 
             // Обновляем стат-карточки (read-only)
@@ -2318,7 +2319,7 @@
                 const ec = document.getElementById('shiftErrCount'); if (ec) ec.value = '';
                 const et = document.getElementById('shiftErrTime');  if (et) et.value = '';
                 const vo = document.getElementById('excelVOshibke'); if (vo) vo.value = '';
-                const sv = document.getElementById('shiftVOTS'); if (sv) sv.value = '';
+                const sv = document.getElementById('shiftVOTS'); if (sv) sv.textContent = '—';
                 const fn = document.getElementById('excelFileName'); if (fn) fn.value = '';
                 const sfn = document.getElementById('shiftFileName'); if (sfn) sfn.value = '';
                 const inzh = document.getElementById('excelInzhener'); if (inzh) inzh.value = '';
@@ -2414,7 +2415,7 @@
             const autoErrCount = excelData.length;
 
             const vOshibkeRaw = parseInt(document.getElementById('excelVOshibke').value) || autoErrorMinutes || parseInt(localStorage.getItem('field_shiftErrTime')) || 0;
-            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || autoVOTSMinutes || parseInt(localStorage.getItem('field_shiftVOTS')) || 0;
+            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').textContent) || autoVOTSMinutes || parseInt(localStorage.getItem('field_shiftVOTS')) || 0;
             const inzhener    = document.getElementById('excelInzhener').value || '';
             const tex         = document.getElementById('excelTex').value || '';
             const fileName    = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
@@ -2753,7 +2754,7 @@
 
             const errCount = document.getElementById('shiftErrCount').value || autoErrCount || localStorage.getItem('field_shiftErrCount') || '';
             const errTime  = document.getElementById('shiftErrTime').value  || autoErrTime || localStorage.getItem('field_shiftErrTime')  || '';
-            const vots     = document.getElementById('shiftVOTS').value || autoVOTSTime || localStorage.getItem('field_shiftVOTS') || '';
+            const vots     = document.getElementById('shiftVOTS').textContent || autoVOTSTime || localStorage.getItem('field_shiftVOTS') || '';
             const techName = document.getElementById('excelTex').value || '';
             const wcsName  = document.getElementById('excelInzhener').value || '';
             const fileName = (document.getElementById('shiftFileName').value.trim() || 'shift_report') + '.xlsx';
@@ -2963,7 +2964,7 @@
                     
                     // ВОТС всегда пересчитываем заново
                     const sv = document.getElementById('shiftVOTS');
-                    if (sv) sv.value = totalVOTSMinutes;
+                    if (sv) sv.textContent = totalVOTSMinutes;
                     localStorage.setItem('field_shiftVOTS', totalVOTSMinutes);
                 }
             } catch(e) {}
