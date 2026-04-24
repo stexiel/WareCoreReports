@@ -1997,12 +1997,36 @@
                 const ec = document.getElementById('shiftErrCount'); if (ec) ec.value = '';
                 const et = document.getElementById('shiftErrTime');  if (et) et.value = '';
                 const vo = document.getElementById('excelVOshibke'); if (vo) vo.value = '';
+                const sv = document.getElementById('shiftVOTS'); if (sv) sv.value = '';
+                const fn = document.getElementById('excelFileName'); if (fn) fn.value = '';
+                const sfn = document.getElementById('shiftFileName'); if (sfn) sfn.value = '';
+                const inzh = document.getElementById('excelInzhener'); if (inzh) inzh.value = '';
+                const tex = document.getElementById('excelTex'); if (tex) tex.value = '';
+
                 localStorage.removeItem('field_excelInput');
                 localStorage.removeItem('excelData');
                 localStorage.removeItem('field_shiftErrCount');
                 localStorage.removeItem('field_shiftErrTime');
-                const sv = document.getElementById('shiftVOTS'); if (sv) sv.value = '';
                 localStorage.removeItem('field_shiftVOTS');
+                localStorage.removeItem('shipRows');
+                localStorage.removeItem('recvRows');
+
+                // Очистить строки отгрузки и приемки
+                const shipmentRows = document.getElementById('shipmentRows');
+                const receiptRows = document.getElementById('receiptRows');
+                if (shipmentRows) shipmentRows.innerHTML = '';
+                if (receiptRows) receiptRows.innerHTML = '';
+
+                // Сбросить статистику паллет
+                const paired = document.getElementById('shiftPaired');
+                const unpaired = document.getElementById('shiftUnpaired');
+                const total = document.getElementById('shiftTotal');
+                const pairedPct = document.getElementById('shiftPairedPct');
+                if (paired) paired.textContent = '0';
+                if (unpaired) unpaired.textContent = '0';
+                if (total) total.textContent = '0';
+                if (pairedPct) pairedPct.textContent = '0%';
+
                 updateExcelPreview();
             } catch(e) { console.error('clearExcelData error:', e); }
         }
