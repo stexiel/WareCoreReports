@@ -1249,7 +1249,7 @@
                         </div>
                         <div style="background:var(--background); border:1px solid var(--border); border-radius:8px; padding:12px;">
                             <div style="font-size:10px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ВОТС (мин)</div>
-                            <input type="number" id="shiftVOTS" class="form-input" placeholder="128" style="width:100%; text-align:center; font-size:18px; font-weight:700;">
+                            <input type="number" id="shiftVOTS" class="form-input" placeholder="0" readonly style="width:100%; text-align:center; font-size:18px; font-weight:700; background:var(--background);">
                         </div>
                     </div>
 
@@ -2015,6 +2015,10 @@
                 totalErrorMinutes += Math.round(diff / 60);
             }
             document.getElementById('excelVOshibke').value = totalErrorMinutes;
+
+            // ВОТС автоматически равен общему времени ошибок
+            document.getElementById('shiftVOTS').value = totalErrorMinutes;
+            localStorage.setItem('field_shiftVOTS', totalErrorMinutes);
 
             // Обновляем стат-карточки (read-only)
             document.getElementById('statErrCount').textContent = parsedRows.length;
