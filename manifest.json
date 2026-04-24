@@ -10,13 +10,13 @@
   "categories": ["productivity", "utilities", "business"],
   "icons": [
     {
-      "src": "Снимок_экрана_2026-04-19_043623-removebg-preview.png",
+      "src": "icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "Снимок_экрана_2026-04-19_043623-removebg-preview.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

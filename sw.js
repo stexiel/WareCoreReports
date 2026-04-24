@@ -1,9 +1,9 @@
-const CACHE_NAME = 'warecore-reports-v3';
+const CACHE_NAME = 'warecore-reports-v4';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './Снимок_экрана_2026-04-19_043623-removebg-preview.png',
+  './icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'

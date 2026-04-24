@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WareCore Reports</title>
-    <link rel="icon" href="Снимок_экрана_2026-04-19_043623-removebg-preview.png">
+    <link rel="icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="WareCore Reports">
-    <link rel="apple-touch-icon" href="Снимок_экрана_2026-04-19_043623-removebg-preview.png">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -2017,17 +2017,23 @@
             document.getElementById('excelVOshibke').value = totalErrorMinutes;
 
             // ВОТС автоматически равен общему времени ошибок
-            document.getElementById('shiftVOTS').value = totalErrorMinutes;
+            const sv = document.getElementById('shiftVOTS');
+            if (sv) sv.value = totalErrorMinutes;
             localStorage.setItem('field_shiftVOTS', totalErrorMinutes);
 
             // Обновляем стат-карточки (read-only)
-            document.getElementById('statErrCount').textContent = parsedRows.length;
-            document.getElementById('statErrTime').textContent  = totalErrorMinutes;
-            document.getElementById('statEvents').textContent   = excelData.length;
+            const sc = document.getElementById('statErrCount');
+            const st = document.getElementById('statErrTime');
+            const se = document.getElementById('statEvents');
+            if (sc) sc.textContent = parsedRows.length;
+            if (st) st.textContent  = totalErrorMinutes;
+            if (se) se.textContent   = excelData.length;
 
             // Сохраняем в hidden поля для дашборда
-            document.getElementById('shiftErrCount').value = parsedRows.length;
-            document.getElementById('shiftErrTime').value  = totalErrorMinutes;
+            const ec = document.getElementById('shiftErrCount');
+            const et = document.getElementById('shiftErrTime');
+            if (ec) ec.value = parsedRows.length;
+            if (et) et.value  = totalErrorMinutes;
             localStorage.setItem('field_shiftErrCount', parsedRows.length);
             localStorage.setItem('field_shiftErrTime',  totalErrorMinutes);
 
