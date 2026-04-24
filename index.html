@@ -443,6 +443,11 @@
             background: var(--background);
         }
 
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
         .theme-btn {
             display: flex;
             flex-direction: column;
@@ -1946,12 +1951,17 @@
         }
 
         function clearAll() {
+            // Очищаем быстрый расчет
             document.getElementById('quickTimeInput').value = '';
             document.getElementById('quickResultTable').style.display = 'none';
             document.getElementById('timeInput').value = '';
             document.getElementById('batchResults').classList.add('hidden');
             document.getElementById('palletInput').value = '';
             document.getElementById('palletResults').classList.add('hidden');
+            
+            // Очищаем Excel данные тоже
+            clearExcelData();
+            
             // Сохраняем очищенные значения
             const saveIds = ['quickTimeInput','timeInput','palletInput'];
             saveIds.forEach(id => localStorage.removeItem('field_' + id));
@@ -2918,14 +2928,43 @@
                 if (saved) {
                     excelData = JSON.parse(saved);
                     updateExcelPreview();
+                    
+                    // Пересчитываем ВОТС и время ошибок из excelData (на случай если старые данные)
+                    let totalErrorMinutes = 0;
+                    let totalVOTSMinutes = 0;
+                    for (const row of excelData) {
+                        if (row.time && row.endTime) {
+                            const toSec = t => {
+                                const p = t.split(':');
+                                return parseInt(p[0]) * 3600 + parseInt(p[1]) * 60 + parseInt(p[2] || 0);
+                            };
+                            let diff = toSec(row.endTime) - toSec(row.time);
+                            if (diff < 0) diff += 24 * 3600;
+                            const diffMinutes = Math.round(diff / 60);
+                            totalErrorMinutes += diffMinutes;
+                            
+                            // ВОТС: если ≤15 мин, то минус 2 мин; если >15 мин, то половина
+                            if (diffMinutes <= 15) {
+                                totalVOTSMinutes += Math.max(0, diffMinutes - 2);
+                            } else {
+                                totalVOTSMinutes += Math.round(diffMinutes / 2);
+                            }
+                        }
+                    }
+                    
                     // Восстанавливаем стат-карточки
-                    const errCount = localStorage.getItem('field_shiftErrCount') || '';
-                    const errTime  = localStorage.getItem('field_shiftErrTime') || '';
-                    if (errCount) { document.getElementById('statErrCount').textContent = errCount; document.getElementById('shiftErrCount').value = errCount; }
-                    if (errTime)  { document.getElementById('statErrTime').textContent  = errTime;  document.getElementById('shiftErrTime').value  = errTime;  document.getElementById('excelVOshibke').value = errTime; }
-                    const vots = localStorage.getItem('field_shiftVOTS');
-                    if (vots) { const sv = document.getElementById('shiftVOTS'); if (sv) sv.value = vots; }
-                    if (excelData.length) document.getElementById('statEvents').textContent = excelData.length;
+                    const errCount = excelData.length;
+                    document.getElementById('statErrCount').textContent = errCount;
+                    document.getElementById('shiftErrCount').value = errCount;
+                    document.getElementById('statErrTime').textContent = totalErrorMinutes;
+                    document.getElementById('shiftErrTime').value = totalErrorMinutes;
+                    document.getElementById('excelVOshibke').value = totalErrorMinutes;
+                    document.getElementById('statEvents').textContent = excelData.length;
+                    
+                    // ВОТС всегда пересчитываем заново
+                    const sv = document.getElementById('shiftVOTS');
+                    if (sv) sv.value = totalVOTSMinutes;
+                    localStorage.setItem('field_shiftVOTS', totalVOTSMinutes);
                 }
             } catch(e) {}
         }
