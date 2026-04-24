@@ -2706,16 +2706,44 @@
             let deferredPrompt;
             const installBtn = document.getElementById('installBtn');
 
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                installBtn.style.display = 'inline-flex';
-            });
+            // Проверяем, установлено ли уже приложение
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone === true) {
+                console.log('Приложение уже установлено');
+            } else {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    installBtn.style.display = 'inline-flex';
+                });
 
-            window.addEventListener('appinstalled', () => {
-                deferredPrompt = null;
-                installBtn.style.display = 'none';
-            });
+                window.addEventListener('appinstalled', () => {
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                    alert('Приложение установлено! Найдите его в меню Пуск.');
+                });
+
+                // Если кнопка не появилась через 3 секунды, показываем инструкции
+                setTimeout(() => {
+                    if (installBtn.style.display === 'none' && !deferredPrompt) {
+                        const isChrome = navigator.userAgent.indexOf('Chrome') !== -1;
+                        const isEdge = navigator.userAgent.indexOf('Edg') !== -1;
+                        
+                        if (isChrome || isEdge) {
+                            installBtn.innerHTML = `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                Как установить
+                            `;
+                            installBtn.onclick = () => alert('Для установки:\n1. Откройте меню (⋯ или ⋮) в Chrome/Edge\n2. Выберите "Установить приложение" или "Установить WareCore Reports"\n3. Или используйте иконку 📲 в адресной строке');
+                            installBtn.style.display = 'inline-flex';
+                        }
+                    }
+                }, 3000);
+            }
         });
 
         // PWA: Функция установки приложения

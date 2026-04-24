@@ -6,7 +6,8 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
-  "orientation": "portrait-primary",
+  "scope": ".",
+  "categories": ["productivity", "utilities", "business"],
   "icons": [
     {
       "src": "Снимок_экрана_2026-04-19_043623-removebg-preview.png",
@@ -20,5 +21,23 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Быстрый расчёт",
+      "short_name": "Расчёт",
+      "description": "Открыть быстрый расчёт разницы времени",
+      "url": "./index.html#quick"
+    },
+    {
+      "name": "Генератор Excel",
+      "short_name": "Excel",
+      "description": "Открыть генератор Excel отчётов",
+      "url": "./index.html#excel"
+    }
+  ],
+  "id": "warecore-reports",
+  "dir": "ltr",
+  "lang": "ru",
+  "prefer_related_applications": false
 }
