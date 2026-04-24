@@ -3090,7 +3090,25 @@
             renderStorageList();
         }
 
-        // Перевод текста (MyMemory API)
+        // Разбиваем текст на части по maxLen символов (по строкам)
+        function splitTextIntoChunks(text, maxLen = 400) {
+            const lines = text.split('\n');
+            const chunks = [];
+            let currentChunk = '';
+            
+            for (const line of lines) {
+                if ((currentChunk + '\n' + line).length > maxLen && currentChunk.length > 0) {
+                    chunks.push(currentChunk.trim());
+                    currentChunk = line;
+                } else {
+                    currentChunk = currentChunk ? currentChunk + '\n' + line : line;
+                }
+            }
+            if (currentChunk.trim()) chunks.push(currentChunk.trim());
+            return chunks;
+        }
+
+        // Перевод текста (MyMemory API) — с разбиением на части
         async function translateText() {
             const sourceText = document.getElementById('sourceText').value.trim();
             const sourceLang = document.getElementById('sourceLang').value;
@@ -3112,18 +3130,30 @@
 
             try {
                 const langPair = `${sourceLang}|${targetLang}`;
-                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${langPair}`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.responseStatus === 200) {
-                    const translated = data.responseData.translatedText;
-                    translatedTextarea.value = translated;
-                    addToTranslationHistory(sourceText, translated, sourceLang, targetLang);
-                } else {
-                    translatedTextarea.value = 'Ошибка перевода. Попробуйте снова.';
+                const chunks = splitTextIntoChunks(sourceText, 400);
+                let translatedParts = [];
+                
+                for (let i = 0; i < chunks.length; i++) {
+                    const chunk = chunks[i];
+                    translatedTextarea.value = `Перевод... (${i + 1}/${chunks.length})`;
+                    
+                    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${langPair}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.responseStatus === 200) {
+                        translatedParts.push(data.responseData.translatedText);
+                    } else {
+                        translatedParts.push(`[Ошибка перевода части ${i + 1}]`);
+                    }
+                    
+                    // Небольшая задержка между запросами чтобы не забанили
+                    if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 300));
                 }
+                
+                const translated = translatedParts.join('\n');
+                translatedTextarea.value = translated;
+                addToTranslationHistory(sourceText, translated, sourceLang, targetLang);
             } catch (error) {
                 translatedTextarea.value = 'Ошибка соединения. Проверьте интернет.';
             } finally {
