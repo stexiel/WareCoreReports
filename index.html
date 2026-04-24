@@ -1524,6 +1524,9 @@
                         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                             <span style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Приемка</span>
                             <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="addReceiptRow()">+ Добавить</button>
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="document.getElementById('receiptExcelInput').click()">📁 Загрузить Excel</button>
+                            <input type="file" id="receiptExcelInput" accept=".xlsx,.xls" style="display:none;" onchange="parseReceiptExcel(this)">
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="parseReceiptData()">📊 Парсить данные</button>
                         </div>
                         <div id="receiptRows"></div>
                     </div>
@@ -2660,8 +2663,9 @@
             return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
         }
 
-        // Храним загруженные данные Excel для отгрузки
+        // Храним загруженные данные Excel для отгрузки и приемки
         let shipmentExcelData = [];
+        let receiptExcelData = [];
 
         // Читаем Excel файл для отгрузки
         async function parseShipmentExcel(input) {
@@ -2763,6 +2767,115 @@
             
             saveShiftRows();
             alert(`Добавлено ${shipmentCount} строк отгрузки`);
+        }
+
+        // Читаем Excel файл для приемки
+        async function parseReceiptExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const buffer = e.target.result;
+                const workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(buffer);
+                
+                const worksheet = workbook.worksheets[0];
+                const data = [];
+                
+                // Читаем заголовки из первой строки
+                const headers = [];
+                worksheet.getRow(1).eachCell(cell => headers.push(cell.value));
+                
+                // Ищем индексы нужных столбцов
+                const startTimeIdx = headers.findIndex(h => h && h.toString().includes('Время начала'));
+                const endTimeIdx = headers.findIndex(h => h && h.toString().includes('Время окончания'));
+                const notesIdx = headers.findIndex(h => h && h.toString().includes('Примечания'));
+                const docNumIdx = headers.findIndex(h => h && h.toString().includes('Номер внешнего документа'));
+                
+                // Читаем данные (начиная со второй строки)
+                worksheet.eachRow((row, rowNumber) => {
+                    if (rowNumber === 1) return; // пропускаем заголовок
+                    
+                    const startTime = startTimeIdx >= 0 ? row.getCell(startTimeIdx + 1).value : '';
+                    const endTime = endTimeIdx >= 0 ? row.getCell(endTimeIdx + 1).value : '';
+                    const notes = notesIdx >= 0 ? row.getCell(notesIdx + 1).value : '';
+                    const docNum = docNumIdx >= 0 ? row.getCell(docNumIdx + 1).value : '';
+                    
+                    if (startTime || endTime) {
+                        data.push({
+                            startTime,
+                            endTime,
+                            notes,
+                            docNum
+                        });
+                    }
+                });
+                
+                receiptExcelData = data;
+                alert(`Загружено ${data.length} строк. Нажмите "Парсить данные" для добавления.`);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Парсим загруженные данные Excel для приемки и добавляем строки
+        function parseReceiptData() {
+            if (!receiptExcelData.length) {
+                alert('Сначала загрузите Excel файл');
+                return;
+            }
+            
+            // Очищаем существующие строки
+            document.getElementById('receiptRows').innerHTML = '';
+            receiptCount = 0;
+            
+            // Форматируем КИС
+            function formatKIS(value) {
+                if (!value) return '';
+                const str = value.toString().trim();
+                if (str.startsWith('ALЦ-') || str.startsWith('АLЦ-')) return str.replace('АLЦ-', 'ALЦ-');
+                if (/^\d+$/.test(str)) return 'ALЦ-' + str;
+                return str;
+            }
+            
+            // Извлекаем КИС из номера документа (например, "23.04.2026 день АLЦ-0154462 - мц3 (1)" -> "ALЦ-0154462")
+            function extractKISFromDocNum(docNum) {
+                if (!docNum) return '';
+                const match = docNum.toString().match(/[AА]LЦ-(\d+)/);
+                return match ? 'ALЦ-' + match[1] : '';
+            }
+            
+            // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" -> "HH:MM:SS"
+            function extractTime(value) {
+                if (!value) return '';
+                const str = value.toString().trim();
+                const match = str.match(/\d{2}:\d{2}:\d{2}/);
+                return match ? match[0] : str;
+            }
+            
+            // Добавляем каждую строку
+            for (const row of receiptExcelData) {
+                const kis = formatKIS(row.notes) || extractKISFromDocNum(row.docNum);
+                const startTime = extractTime(row.startTime);
+                const endTime = extractTime(row.endTime);
+                
+                if (kis || startTime) {
+                    receiptCount++;
+                    document.getElementById('receiptRows').insertAdjacentHTML('beforeend', makeRowHtml('recv', receiptCount));
+                    
+                    // Заполняем данные
+                    const kisInput = document.getElementById(`recvKis${receiptCount}`);
+                    const startInput = document.getElementById(`recvStart${receiptCount}`);
+                    const endInput = document.getElementById(`recvEnd${receiptCount}`);
+                    
+                    if (kisInput) kisInput.value = kis;
+                    if (startInput) startInput.value = startTime;
+                    if (endInput) endInput.value = endTime;
+                }
+            }
+            
+            saveShiftRows();
+            alert(`Добавлено ${receiptCount} строк приемки`);
         }
 
         function collectRows(idPrefix) {
