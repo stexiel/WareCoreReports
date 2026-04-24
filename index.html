@@ -2253,6 +2253,7 @@
 
             // Автоматически считаем "В ошибке" — сумма разниц времени
             let totalErrorMinutes = 0;
+            let totalVOTSMinutes = 0;
             for (const row of parsedRows) {
                 const toSec = t => {
                     const p = t.split(':');
@@ -2260,14 +2261,22 @@
                 };
                 let diff = toSec(row.rawEnd) - toSec(row.rawStart);
                 if (diff < 0) diff += 24 * 3600;
-                totalErrorMinutes += Math.round(diff / 60);
+                const diffMinutes = Math.round(diff / 60);
+                totalErrorMinutes += diffMinutes;
+
+                // ВОТС: если ≤15 мин, то минус 2 мин; если >15 мин, то половина времени
+                if (diffMinutes <= 15) {
+                    totalVOTSMinutes += Math.max(0, diffMinutes - 2);
+                } else {
+                    totalVOTSMinutes += Math.round(diffMinutes / 2);
+                }
             }
             document.getElementById('excelVOshibke').value = totalErrorMinutes;
 
-            // ВОТС автоматически равен общему времени ошибок
+            // ВОТС — время ожидания тех службы
             const sv = document.getElementById('shiftVOTS');
-            if (sv) sv.value = totalErrorMinutes;
-            localStorage.setItem('field_shiftVOTS', totalErrorMinutes);
+            if (sv) sv.value = totalVOTSMinutes;
+            localStorage.setItem('field_shiftVOTS', totalVOTSMinutes);
 
             // Обновляем стат-карточки (read-only)
             const sc = document.getElementById('statErrCount');
@@ -2371,8 +2380,9 @@
                 return;
             }
 
-            // Автоматический расчет времени ошибок из excelData
+            // Автоматический расчет времени ошибок и ВОТС из excelData
             let autoErrorMinutes = 0;
+            let autoVOTSMinutes = 0;
             for (const row of excelData) {
                 if (row.time && row.endTime) {
                     const toSec = t => {
@@ -2381,13 +2391,21 @@
                     };
                     let diff = toSec(row.endTime) - toSec(row.time);
                     if (diff < 0) diff += 24 * 3600;
-                    autoErrorMinutes += Math.round(diff / 60);
+                    const diffMinutes = Math.round(diff / 60);
+                    autoErrorMinutes += diffMinutes;
+
+                    // ВОТС: если ≤15 мин, то минус 2 мин; если >15 мин, то половина времени
+                    if (diffMinutes <= 15) {
+                        autoVOTSMinutes += Math.max(0, diffMinutes - 2);
+                    } else {
+                        autoVOTSMinutes += Math.round(diffMinutes / 2);
+                    }
                 }
             }
             const autoErrCount = excelData.length;
 
             const vOshibkeRaw = parseInt(document.getElementById('excelVOshibke').value) || autoErrorMinutes || parseInt(localStorage.getItem('field_shiftErrTime')) || 0;
-            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || autoErrorMinutes || parseInt(localStorage.getItem('field_shiftVOTS')) || 0;
+            const vOTSRaw     = parseInt(document.getElementById('shiftVOTS').value) || autoVOTSMinutes || parseInt(localStorage.getItem('field_shiftVOTS')) || 0;
             const inzhener    = document.getElementById('excelInzhener').value || '';
             const tex         = document.getElementById('excelTex').value || '';
             const fileName    = (document.getElementById('excelFileName').value.trim() || 'stackers_report') + '.xlsx';
@@ -2700,6 +2718,7 @@
             // Автоматический расчет из excelData если поля пустые
             let autoErrCount = 0;
             let autoErrTime = 0;
+            let autoVOTSTime = 0;
             if (excelData.length > 0) {
                 autoErrCount = excelData.length;
                 for (const row of excelData) {
@@ -2710,14 +2729,22 @@
                         };
                         let diff = toSec(row.endTime) - toSec(row.time);
                         if (diff < 0) diff += 24 * 3600;
-                        autoErrTime += Math.round(diff / 60);
+                        const diffMinutes = Math.round(diff / 60);
+                        autoErrTime += diffMinutes;
+
+                        // ВОТС: если ≤15 мин, то минус 2 мин; если >15 мин, то половина времени
+                        if (diffMinutes <= 15) {
+                            autoVOTSTime += Math.max(0, diffMinutes - 2);
+                        } else {
+                            autoVOTSTime += Math.round(diffMinutes / 2);
+                        }
                     }
                 }
             }
 
             const errCount = document.getElementById('shiftErrCount').value || autoErrCount || localStorage.getItem('field_shiftErrCount') || '';
             const errTime  = document.getElementById('shiftErrTime').value  || autoErrTime || localStorage.getItem('field_shiftErrTime')  || '';
-            const vots     = document.getElementById('shiftVOTS').value || autoErrTime || localStorage.getItem('field_shiftVOTS') || '';
+            const vots     = document.getElementById('shiftVOTS').value || autoVOTSTime || localStorage.getItem('field_shiftVOTS') || '';
             const techName = document.getElementById('excelTex').value || '';
             const wcsName  = document.getElementById('excelInzhener').value || '';
             const fileName = (document.getElementById('shiftFileName').value.trim() || 'shift_report') + '.xlsx';
