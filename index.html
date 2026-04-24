@@ -2561,41 +2561,17 @@
                 r.getCell(2).style = cellStyle(WHITE, true);
             });
 
-            // Скачиваем с возможностью выбора места (рабочий стол)
+            // Скачиваем файл (стандартное поведение - в папку загрузок)
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-            // Проверяем поддержку File System Access API
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: fileName,
-                        types: [{
-                            description: 'Excel files',
-                            accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
-                        }]
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(blob);
-                    await writable.close();
-                } catch (err) {
-                    // Пользователь отменил или ошибка - используем стандартное скачивание
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                }
-            } else {
-                // Fallback для старых браузеров
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                a.click();
-                URL.revokeObjectURL(url);
-            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // ===== ВТОРАЯ ТАБЛИЦА: ОТГРУЗКА / ПРИЕМКА =====
@@ -2873,41 +2849,17 @@
                 r.height = 16;
             });
 
-            // Скачиваем с возможностью выбора места (рабочий стол)
+            // Скачиваем файл (стандартное поведение - в папку загрузок)
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-            // Проверяем поддержку File System Access API
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: fileName,
-                        types: [{
-                            description: 'Excel files',
-                            accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
-                        }]
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(blob);
-                    await writable.close();
-                } catch (err) {
-                    // Пользователь отменил или ошибка - используем стандартное скачивание
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                }
-            } else {
-                // Fallback для старых браузеров
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                a.click();
-                URL.revokeObjectURL(url);
-            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // ===== СОХРАНЕНИЕ ДАННЫХ В localStorage =====
@@ -3047,48 +2999,20 @@
             `).join('');
         }
 
-        async function downloadFromStorage(index) {
+        function downloadFromStorage(index) {
             const storedFiles = JSON.parse(localStorage.getItem('excelStorage') || '[]');
             const file = storedFiles[index];
 
             if (!file) return;
 
-            // Конвертируем base64 data URL в blob
-            const response = await fetch(file.data);
-            const blob = await response.blob();
+            // Скачиваем файл (стандартное поведение - в папку загрузок)
             const fileName = file.name + '.xlsx';
-
-            // Проверяем поддержку File System Access API для выбора места сохранения
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: fileName,
-                        types: [{
-                            description: 'Excel files',
-                            accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
-                        }]
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(blob);
-                    await writable.close();
-                } catch (err) {
-                    // Пользователь отменил или ошибка - используем стандартное скачивание
-                    const link = document.createElement('a');
-                    link.href = file.data;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            } else {
-                // Fallback для старых браузеров
-                const link = document.createElement('a');
-                link.href = file.data;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            const link = document.createElement('a');
+            link.href = file.data;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function deleteFromStorage(index) {
