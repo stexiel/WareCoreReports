@@ -803,6 +803,14 @@
                     </svg>
                     Настройки
                 </div>
+                <div class="nav-item" onclick="switchTab('storage')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Хранилище Excel
+                </div>
             </div>
 
         </nav>
@@ -1095,6 +1103,41 @@
                     <div class="toggle-option">
                         <input type="checkbox" id="saveHistoryCheckbox" onchange="setSaveHistory(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
                         <span>Сохранять историю расчётов</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="storageTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Хранилище Excel файлов</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Название файла</label>
+                        <input type="text" id="storageFileName" class="form-input" placeholder="приемка шаблон">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">&nbsp;</label>
+                        <input type="file" id="storageFileInput" accept=".xlsx,.xls" class="form-input">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveToStorage()" style="width: 100%; padding: 12px; margin-bottom: 24px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    Сохранить файл
+                </button>
+
+                <div style="margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">Сохраненные файлы</h3>
+                    <div id="storageFileList" style="display: flex; flex-direction: column; gap: 12px;">
+                        <p style="color: var(--text-secondary); font-size: 14px;">Нет сохраненных файлов</p>
                     </div>
                 </div>
             </div>
@@ -1678,6 +1721,7 @@
             document.getElementById('translatorTab').classList.add('hidden');
             document.getElementById('historyTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
+            document.getElementById('storageTab').classList.add('hidden');
 
             document.getElementById(tab + 'Tab').classList.remove('hidden');
 
@@ -1778,6 +1822,7 @@
             document.getElementById('translatorTab').classList.add('hidden');
             document.getElementById('historyTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
+            document.getElementById('storageTab').classList.add('hidden');
 
             // Показываем сохранённую вкладку
             const tab = document.getElementById(savedTab + 'Tab');
@@ -2589,6 +2634,99 @@
             localStorage.setItem('recvRows', JSON.stringify(recvData));
         }
 
+        // Хранилище Excel файлов
+        function saveToStorage() {
+            const fileInput = document.getElementById('storageFileInput');
+            const fileName = document.getElementById('storageFileName').value.trim() || 'приемка шаблон';
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Выберите файл для сохранения');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileData = {
+                    name: fileName,
+                    data: e.target.result,
+                    date: new Date().toISOString(),
+                    originalName: file.name
+                };
+
+                const storedFiles = JSON.parse(localStorage.getItem('excelStorage') || '[]');
+                storedFiles.push(fileData);
+                localStorage.setItem('excelStorage', JSON.stringify(storedFiles));
+
+                // Очистка полей
+                fileInput.value = '';
+                document.getElementById('storageFileName').value = '';
+
+                renderStorageList();
+                alert('Файл сохранён в хранилище');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderStorageList() {
+            const listContainer = document.getElementById('storageFileList');
+            const storedFiles = JSON.parse(localStorage.getItem('excelStorage') || '[]');
+
+            if (storedFiles.length === 0) {
+                listContainer.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">Нет сохраненных файлов</p>';
+                return;
+            }
+
+            listContainer.innerHTML = storedFiles.map((file, index) => `
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${file.name}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Оригинал: ${file.originalName} • ${new Date(file.date).toLocaleString('ru-RU')}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="downloadFromStorage(${index})" style="padding: 8px 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Скачать
+                        </button>
+                        <button class="btn btn-secondary" onclick="deleteFromStorage(${index})" style="padding: 8px 12px; background: var(--danger);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function downloadFromStorage(index) {
+            const storedFiles = JSON.parse(localStorage.getItem('excelStorage') || '[]');
+            const file = storedFiles[index];
+
+            if (!file) return;
+
+            // Скачивание в папку Downloads (на Windows это рабочий стол по умолчанию)
+            const link = document.createElement('a');
+            link.href = file.data;
+            link.download = file.name + '.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function deleteFromStorage(index) {
+            if (!confirm('Удалить файл из хранилища?')) return;
+
+            const storedFiles = JSON.parse(localStorage.getItem('excelStorage') || '[]');
+            storedFiles.splice(index, 1);
+            localStorage.setItem('excelStorage', JSON.stringify(storedFiles));
+            renderStorageList();
+        }
+
         // Перевод текста (MyMemory API)
         async function translateText() {
             const sourceText = document.getElementById('sourceText').value.trim();
@@ -2708,6 +2846,7 @@
             restoreExcelData();
             restoreShiftRows();
             renderTranslationHistory();
+            renderStorageList();
 
             // Вешаем автосохранение на все поля
             PERSIST_IDS.forEach(id => {
