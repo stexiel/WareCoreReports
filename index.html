@@ -2851,9 +2851,23 @@
                 const matchWithPrefix = str.match(/[AА]LЦ-(\d+)/);
                 if (matchWithPrefix) return 'ALЦ-' + matchWithPrefix[1];
                 
-                // Если нет ALЦ-, ищем просто цифры (например, 0155183, 8422)
-                const matchDigits = str.match(/\b(\d{4,})\b/);
-                if (matchDigits) return 'ALЦ-' + matchDigits[1];
+                // Если нет ALЦ-, ищем цифры после слов "ночь", "день", или просто 4-7 значные цифры (но не год 2026)
+                // Сначала ищем после "ночь" или "день"
+                const afterWord = str.match(/(?:ночь|день)\s+(\d{4,7})/i);
+                if (afterWord) return 'ALЦ-' + afterWord[1];
+                
+                // Если нет после слов, ищем 4-7 значные цифры которые не 2026 (год)
+                const allDigits = str.match(/\b(\d{4,7})\b/g);
+                if (allDigits) {
+                    // Фильтруем года (2026, 2025 и т.д.) и берем первое подходящее
+                    for (const d of allDigits) {
+                        if (!d.startsWith('202') && !d.startsWith('201')) {
+                            return 'ALЦ-' + d;
+                        }
+                    }
+                    // Если все похожи на года, берем первое
+                    return 'ALЦ-' + allDigits[0];
+                }
                 
                 return '';
             }
