@@ -1,4 +1,4 @@
-const CACHE_NAME = 'warecore-reports-v2';
+const CACHE_NAME = 'warecore-reports-v3';
 const urlsToCache = [
   './',
   './index.html',
@@ -10,24 +10,37 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  console.log('[SW] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
+      .then(cache => {
+        console.log('[SW] Caching files...');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('[SW] Installation complete');
+        return self.skipWaiting();
+      })
+      .catch(err => console.error('[SW] Installation failed:', err))
   );
 });
 
 self.addEventListener('activate', event => {
+  console.log('[SW] Activating...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cache => {
           if (cache !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cache);
             return caches.delete(cache);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] Activation complete');
+      return self.clients.claim();
+    })
   );
 });
 
@@ -38,7 +51,16 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        return fetch(event.request).catch(() => {
+        return fetch(event.request).then(response => {
+          // Кэшируем новые ресурсы
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        }).catch(() => {
           // Офлайн fallback
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
