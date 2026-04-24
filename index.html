@@ -1510,6 +1510,9 @@
                         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                             <span style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Отгрузка</span>
                             <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="addShipmentRow()">+ Добавить</button>
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="document.getElementById('shipmentExcelInput').click()">📁 Загрузить Excel</button>
+                            <input type="file" id="shipmentExcelInput" accept=".xlsx,.xls" style="display:none;" onchange="parseShipmentExcel(this)">
+                            <button class="btn btn-secondary" style="padding:3px 12px; font-size:12px;" onclick="parseShipmentData()">📊 Парсить данные</button>
                         </div>
                         <div id="shipmentRows"></div>
                     </div>
@@ -2655,6 +2658,111 @@
             const m = Math.floor((sec % 3600) / 60);
             const s = sec % 60;
             return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        // Храним загруженные данные Excel для отгрузки
+        let shipmentExcelData = [];
+
+        // Читаем Excel файл для отгрузки
+        async function parseShipmentExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const buffer = e.target.result;
+                const workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(buffer);
+                
+                const worksheet = workbook.worksheets[0];
+                const data = [];
+                
+                // Читаем заголовки из первой строки
+                const headers = [];
+                worksheet.getRow(1).eachCell(cell => headers.push(cell.value));
+                
+                // Ищем индексы нужных столбцов
+                const startTimeIdx = headers.findIndex(h => h && h.toString().includes('Время начала'));
+                const endTimeIdx = headers.findIndex(h => h && h.toString().includes('Время окончания'));
+                const machineNumIdx = headers.findIndex(h => h && h.toString().includes('Номер машины'));
+                const notesIdx = headers.findIndex(h => h && h.toString().includes('Примечания'));
+                
+                // Читаем данные (начиная со второй строки)
+                worksheet.eachRow((row, rowNumber) => {
+                    if (rowNumber === 1) return; // пропускаем заголовок
+                    
+                    const startTime = startTimeIdx >= 0 ? row.getCell(startTimeIdx + 1).value : '';
+                    const endTime = endTimeIdx >= 0 ? row.getCell(endTimeIdx + 1).value : '';
+                    const machineNum = machineNumIdx >= 0 ? row.getCell(machineNumIdx + 1).value : '';
+                    const notes = notesIdx >= 0 ? row.getCell(notesIdx + 1).value : '';
+                    
+                    if (startTime || endTime) {
+                        data.push({
+                            startTime,
+                            endTime,
+                            machineNum,
+                            notes
+                        });
+                    }
+                });
+                
+                shipmentExcelData = data;
+                alert(`Загружено ${data.length} строк. Нажмите "Парсить данные" для добавления.`);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Парсим загруженные данные Excel и добавляем строки
+        function parseShipmentData() {
+            if (!shipmentExcelData.length) {
+                alert('Сначала загрузите Excel файл');
+                return;
+            }
+            
+            // Очищаем существующие строки
+            document.getElementById('shipmentRows').innerHTML = '';
+            shipmentCount = 0;
+            
+            // Форматируем КИС
+            function formatKIS(value) {
+                if (!value) return '';
+                const str = value.toString().trim();
+                if (str.startsWith('ALЦ-')) return str;
+                if (/^\d+$/.test(str)) return 'ALЦ-' + str;
+                return str;
+            }
+            
+            // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" -> "HH:MM:SS"
+            function extractTime(value) {
+                if (!value) return '';
+                const str = value.toString().trim();
+                const match = str.match(/\d{2}:\d{2}:\d{2}/);
+                return match ? match[0] : str;
+            }
+            
+            // Добавляем каждую строку
+            for (const row of shipmentExcelData) {
+                const kis = formatKIS(row.notes || row.machineNum);
+                const startTime = extractTime(row.startTime);
+                const endTime = extractTime(row.endTime);
+                
+                if (kis || startTime) {
+                    shipmentCount++;
+                    document.getElementById('shipmentRows').insertAdjacentHTML('beforeend', makeRowHtml('ship', shipmentCount));
+                    
+                    // Заполняем данные
+                    const kisInput = document.getElementById(`shipKis${shipmentCount}`);
+                    const startInput = document.getElementById(`shipStart${shipmentCount}`);
+                    const endInput = document.getElementById(`shipEnd${shipmentCount}`);
+                    
+                    if (kisInput) kisInput.value = kis;
+                    if (startInput) startInput.value = startTime;
+                    if (endInput) endInput.value = endTime;
+                }
+            }
+            
+            saveShiftRows();
+            alert(`Добавлено ${shipmentCount} строк отгрузки`);
         }
 
         function collectRows(idPrefix) {
