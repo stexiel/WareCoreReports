@@ -1962,6 +1962,24 @@
             setTimeout(calculateBatch, 100);
         });
 
+        // Цвета для meta theme-color по темам
+        const themeColors = {
+            'light': '#2563eb',
+            'dark': '#1e293b',
+            'lime': '#84cc16',
+            'purple': '#8b5cf6',
+            'blue': '#2563eb',
+            'red': '#dc2626',
+            'orange': '#ea580c',
+            'amber': '#d97706',
+            'rose': '#e11d48',
+            'pink': '#db2777',
+            'teal': '#0d9488',
+            'cyan': '#0891b2',
+            'indigo': '#4f46e5',
+            'emerald': '#059669'
+        };
+
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
@@ -1972,6 +1990,12 @@
             });
             const activeBtn = document.getElementById(theme + 'ThemeBtn');
             if (activeBtn) activeBtn.classList.add('active');
+
+            // Обновляем meta theme-color для мобильных браузеров
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (metaThemeColor && themeColors[theme]) {
+                metaThemeColor.setAttribute('content', themeColors[theme]);
+            }
         }
 
         function loadTheme() {
