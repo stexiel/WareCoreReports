@@ -274,6 +274,63 @@
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
+        [data-theme="yellow"] {
+            --primary: #ca8a04;
+            --primary-dark: #a16207;
+            --primary-light: #eab308;
+            --primary-rgb: 202,138,4;
+            --secondary: #fde047;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #fefce8;
+            --surface: #ffffff;
+            --border: #fef08a;
+            --text-primary: #713f12;
+            --text-secondary: #a16207;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="gothic"] {
+            --primary: #a855f7;
+            --primary-dark: #9333ea;
+            --primary-light: #c084fc;
+            --primary-rgb: 168,85,247;
+            --secondary: #6b21a8;
+            --success: #4ade80;
+            --warning: #facc15;
+            --danger: #f87171;
+            --background: #09090b;
+            --surface: #18181b;
+            --border: #3f3f46;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6);
+        }
+
+        [data-theme="neon"] {
+            --primary: #00ff88;
+            --primary-dark: #00cc6a;
+            --primary-light: #39ffaa;
+            --primary-rgb: 0,255,136;
+            --secondary: #00e5ff;
+            --success: #00ff88;
+            --warning: #ffea00;
+            --danger: #ff1744;
+            --background: #0a0a0f;
+            --surface: #12121a;
+            --border: #1e1e2e;
+            --text-primary: #e0e0ff;
+            --text-secondary: #7070aa;
+            --shadow-sm: 0 1px 2px 0 rgb(0 255 136 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 255 136 / 0.15);
+            --shadow-lg: 0 10px 15px -3px rgb(0 255 136 / 0.2);
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--background);
@@ -1338,6 +1395,18 @@
                             <div class="theme-preview" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);"></div>
                             <span>Изумруд</span>
                         </button>
+                        <button class="theme-btn" onclick="setTheme('yellow')" id="yellowThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #eab308 0%, #a16207 100%);"></div>
+                            <span>Жёлтая</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('gothic')" id="gothicThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #18181b 0%, #09090b 100%); border: 1px solid #a855f7;"></div>
+                            <span>Готика</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('neon')" id="neonThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #0a0a0f 0%, #12121a 100%); border: 1px solid #00ff88; box-shadow: 0 0 8px #00ff8866;"></div>
+                            <span>Неон</span>
+                        </button>
                     </div>
                 </div>
 
@@ -2137,7 +2206,10 @@
             'teal': '#0d9488',
             'cyan': '#0891b2',
             'indigo': '#4f46e5',
-            'emerald': '#059669'
+            'emerald': '#059669',
+            'yellow':  '#ca8a04',
+            'gothic':  '#a855f7',
+            'neon':    '#00ff88'
         };
 
         function setTheme(theme) {
