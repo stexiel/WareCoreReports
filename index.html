@@ -1598,12 +1598,75 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Отчет по оптимизации паллет приемки</h2>
-                        <p class="card-subtitle">Пустая страница</p>
+                        <h2 class="card-title">Акт приемки — генератор ASN</h2>
+                        <p class="card-subtitle">Загрузите два файла и получите заполненный шаблон</p>
                     </div>
                 </div>
-                <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
-                    <p>Страница в разработке...</p>
+
+                <!-- ШАГ 1: Загрузка файлов -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                        <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
+                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Шаг 1: Загрузите файлы</h3>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">📦 Файл 1 — Данные склада (остатки)</label>
+                            <input type="file" id="asnSourceFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer;">
+                            <div id="asnSourceStatus" style="font-size:11px; color:var(--text-secondary); margin-top:4px;"></div>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">📋 Файл 2 — Шаблон ASN (для заполнения)</label>
+                            <input type="file" id="asnTemplateFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer;">
+                            <div id="asnTemplateStatus" style="font-size:11px; color:var(--text-secondary); margin-top:4px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 2: Параметры -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                        <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
+                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Шаг 2: Параметры</h3>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">Номер заказа (asnReference1)</label>
+                            <input type="text" id="asnReference1" class="form-input" placeholder="8422 арт">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">Дата приемки (lotAtt03)</label>
+                            <input type="text" id="asnLotAtt03" class="form-input" placeholder="2026-04-26" value="">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">Название файла (скачать как)</label>
+                            <input type="text" id="asnOutputName" class="form-input" placeholder="asn_output.xlsx">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 3: Генерировать -->
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <button class="btn btn-primary" onclick="generateASN()" style="padding:12px 24px; font-size:14px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/></svg>
+                        Генерировать и скачать
+                    </button>
+                    <div id="asnGenerateStatus" style="font-size:13px; color:var(--text-secondary);"></div>
+                </div>
+
+                <!-- Превью -->
+                <div id="asnPreview" style="display:none; margin-top:16px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <div style="width:4px; height:18px; background:#22c55e; border-radius:2px;"></div>
+                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Превью данных</h3>
+                        <span id="asnRowCount" style="font-size:12px; color:var(--text-secondary);"></span>
+                    </div>
+                    <div style="overflow-x:auto; max-height:300px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+                        <table id="asnPreviewTable" style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <thead id="asnPreviewHead" style="background:var(--surface); position:sticky; top:0;"></thead>
+                            <tbody id="asnPreviewBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3554,6 +3617,263 @@
         // Загрузка настроек при запуске
         loadSettings();
         loadCurrentTab();
+
+        // ===== АКТ ПРИЕМКИ — ГЕНЕРАТОР ASN =====
+
+        let asnSourceData = [];   // данные из файла 1 (склад)
+        let asnTemplateWb = null; // workbook шаблона (файл 2)
+
+        // Загрузка файла 1 — данные склада
+        document.getElementById('asnSourceFile').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const status = document.getElementById('asnSourceStatus');
+            status.textContent = 'Загрузка...';
+            try {
+                const buf = await file.arrayBuffer();
+                const wb = new ExcelJS.Workbook();
+                await wb.xlsx.load(buf);
+                const ws = wb.worksheets[0];
+
+                // Ищем строку с заголовками (там где есть "Контейнер" и "Артикул")
+                let headerRow = -1;
+                let headers = {};
+                ws.eachRow((row, rn) => {
+                    if (headerRow >= 0) return;
+                    const vals = [];
+                    row.eachCell(c => vals.push((c.value || '').toString().trim()));
+                    // Ищем строку где есть и "Контейнер" и "Артикул"
+                    if (vals.some(v => v.includes('Контейнер')) && vals.some(v => v.includes('Артикул'))) {
+                        headerRow = rn;
+                        vals.forEach((v, i) => { headers[i] = v; });
+                    }
+                });
+
+                if (headerRow < 0) {
+                    status.textContent = '❌ Не найдена строка заголовков (нужны столбцы Контейнер и Артикул)';
+                    return;
+                }
+
+                // Индексы нужных столбцов
+                const colIdx = {};
+                Object.entries(headers).forEach(([i, h]) => {
+                    if (h.includes('Артикул') && !h.includes('Номенклатура'))  colIdx.artIdx = +i;
+                    if (h === 'Контейнер') colIdx.containerIdx = +i;
+                    if (h.includes('Дата производства')) colIdx.prodDateIdx = +i;
+                    if (h.includes('Срок годности'))     colIdx.expDateIdx = +i;
+                    if (h.includes('Партия номенклатуры') && !h.includes('Статус') && !h.includes('Срок') && !h.includes('Дата')) colIdx.batchIdx = +i;
+                    if (h.includes('Кол. уп.') && !h.includes('план') && !h.includes('ERP')) colIdx.qtyIdx = +i;
+                });
+
+                // Если Артикул не нашли отдельно — ищем "Номенклатура.Артикул"
+                if (colIdx.artIdx === undefined) {
+                    Object.entries(headers).forEach(([i, h]) => {
+                        if (h.includes('Артикул')) colIdx.artIdx = +i;
+                    });
+                }
+
+                // Форматирование даты -> "YYYY-MM-DD" текстом
+                function fmtDate(val) {
+                    if (!val) return '';
+                    if (val instanceof Date) {
+                        const y = val.getUTCFullYear();
+                        const m = String(val.getUTCMonth()+1).padStart(2,'0');
+                        const d = String(val.getUTCDate()).padStart(2,'0');
+                        return `${y}-${m}-${d}`;
+                    }
+                    const s = val.toString().trim();
+                    // уже YYYY.MM.DD или YYYY-MM-DD
+                    const m1 = s.match(/(\d{4})[.\-](\d{2})[.\-](\d{2})/);
+                    if (m1) return `${m1[1]}-${m1[2]}-${m1[3]}`;
+                    // DD.MM.YYYY
+                    const m2 = s.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+                    if (m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
+                    return s;
+                }
+
+                asnSourceData = [];
+                ws.eachRow((row, rn) => {
+                    if (rn <= headerRow) return;
+                    const getCell = i => (row.getCell(i + 1).value);
+                    const container = colIdx.containerIdx !== undefined ? (getCell(colIdx.containerIdx) || '').toString().trim() : '';
+                    // Пропускаем строки без контейнера или итоговые
+                    if (!container || container.toLowerCase().includes('итого') || container.length < 5) return;
+                    const art      = colIdx.artIdx      !== undefined ? (getCell(colIdx.artIdx) || '').toString().trim() : '';
+                    const prodDate = colIdx.prodDateIdx !== undefined ? fmtDate(getCell(colIdx.prodDateIdx)) : '';
+                    const expDate  = colIdx.expDateIdx  !== undefined ? fmtDate(getCell(colIdx.expDateIdx))  : '';
+                    const batch    = colIdx.batchIdx    !== undefined ? (getCell(colIdx.batchIdx) || '').toString().trim() : '';
+                    let qty = colIdx.qtyIdx !== undefined ? getCell(colIdx.qtyIdx) : '';
+                    qty = qty === null || qty === undefined || qty === '' ? 0 : (typeof qty === 'number' ? qty : parseFloat(qty.toString().replace(',','.')) || 0);
+                    if (!art && !prodDate) return;
+                    asnSourceData.push({ container, art, prodDate, expDate, batch, qty });
+                });
+
+                status.textContent = `✅ Загружено ${asnSourceData.length} строк`;
+
+                // Показываем превью
+                showAsnPreview();
+            } catch(err) {
+                status.textContent = '❌ Ошибка: ' + err.message;
+                console.error(err);
+            }
+        });
+
+        // Загрузка файла 2 — шаблон ASN
+        document.getElementById('asnTemplateFile').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const status = document.getElementById('asnTemplateStatus');
+            status.textContent = 'Загрузка...';
+            try {
+                const buf = await file.arrayBuffer();
+                const wb = new ExcelJS.Workbook();
+                await wb.xlsx.load(buf);
+                asnTemplateWb = { wb, buf };
+                status.textContent = `✅ Шаблон загружен (листов: ${wb.worksheets.length})`;
+            } catch(err) {
+                status.textContent = '❌ Ошибка: ' + err.message;
+                console.error(err);
+            }
+        });
+
+        // Превью данных склада
+        function showAsnPreview() {
+            if (!asnSourceData.length) return;
+            const preview = document.getElementById('asnPreview');
+            const head = document.getElementById('asnPreviewHead');
+            const body = document.getElementById('asnPreviewBody');
+            const count = document.getElementById('asnRowCount');
+
+            count.textContent = `(${asnSourceData.length} строк)`;
+            const cols = ['Контейнер', 'Артикул', 'Дата производства', 'Срок годности', 'Партия', 'Кол-во'];
+            head.innerHTML = `<tr>${cols.map(c => `<th style="padding:6px 10px; border:1px solid var(--border); white-space:nowrap; font-weight:600;">${c}</th>`).join('')}</tr>`;
+            body.innerHTML = asnSourceData.map(r =>
+                `<tr>
+                    <td style="padding:5px 10px; border:1px solid var(--border);">${r.container}</td>
+                    <td style="padding:5px 10px; border:1px solid var(--border);">${r.art}</td>
+                    <td style="padding:5px 10px; border:1px solid var(--border);">${r.prodDate}</td>
+                    <td style="padding:5px 10px; border:1px solid var(--border);">${r.expDate}</td>
+                    <td style="padding:5px 10px; border:1px solid var(--border);">${r.batch}</td>
+                    <td style="padding:5px 10px; border:1px solid var(--border); text-align:right;">${r.qty}</td>
+                </tr>`
+            ).join('');
+            preview.style.display = 'block';
+        }
+
+        // Генерация ASN файла
+        async function generateASN() {
+            const status = document.getElementById('asnGenerateStatus');
+
+            if (!asnSourceData.length) {
+                status.textContent = '❌ Загрузите файл 1 (данные склада)';
+                return;
+            }
+            if (!asnTemplateWb) {
+                status.textContent = '❌ Загрузите файл 2 (шаблон ASN)';
+                return;
+            }
+
+            const asnRef1 = document.getElementById('asnReference1').value.trim();
+            const lotAtt03 = document.getElementById('asnLotAtt03').value.trim();
+            const outputName = document.getElementById('asnOutputName').value.trim() || 'asn_output.xlsx';
+
+            status.textContent = 'Обработка...';
+
+            try {
+                // Используем тот же workbook шаблона
+                const wb = asnTemplateWb.wb;
+                const ws = wb.worksheets[0]; // первый лист
+
+                // Найти строку заголовков (2я строка — технические имена полей)
+                // Обычно строка 1 — китайские названия, строка 2 — имена полей
+                let headerRowNum = 2;
+                const headerRow = ws.getRow(headerRowNum);
+                const fieldMap = {}; // fieldName -> colNumber
+                headerRow.eachCell((cell, colNum) => {
+                    const v = (cell.value || '').toString().trim();
+                    if (v) fieldMap[v] = colNum;
+                });
+
+                // Если не нашли ключевые поля — попробуем строку 1
+                if (!fieldMap['containerId'] && !fieldMap['warehouseId']) {
+                    headerRowNum = 1;
+                    const r1 = ws.getRow(1);
+                    r1.eachCell((cell, colNum) => {
+                        const v = (cell.value || '').toString().trim();
+                        if (v) fieldMap[v] = colNum;
+                    });
+                }
+
+                // Удаляем все строки данных (начиная с headerRowNum+1)
+                const lastRow = ws.lastRow ? ws.lastRow.number : headerRowNum + 1;
+                for (let r = lastRow; r > headerRowNum; r--) {
+                    ws.spliceRows(r, 1);
+                }
+
+                // Фиксированные значения
+                const fixed = {
+                    warehouseId: 'WH01',
+                    asnType: 'ProductIn',
+                    customerId: 'SHIN-LINE',
+                    packUom: 'EA',
+                    lotAtt08: 'GQ',
+                    lotAtt05: 'GENERAL',
+                };
+
+                // Заполняем строки
+                asnSourceData.forEach((item, idx) => {
+                    const rowNum = headerRowNum + 1 + idx;
+                    const row = ws.getRow(rowNum);
+
+                    const setValue = (field, val) => {
+                        if (fieldMap[field]) row.getCell(fieldMap[field]).value = val;
+                    };
+
+                    // Фиксированные
+                    Object.entries(fixed).forEach(([k, v]) => setValue(k, v));
+
+                    // Из параметров
+                    setValue('asnReference1', asnRef1);
+                    setValue('lotAtt03', lotAtt03); // текст
+
+                    // Из данных склада
+                    setValue('sku', item.art);
+                    setValue('containerId', item.container);
+                    setValue('expectedQty', item.qty);
+                    // lotAtt01, lotAtt02 — как ТЕКСТ
+                    if (fieldMap['lotAtt01']) {
+                        const c = row.getCell(fieldMap['lotAtt01']);
+                        c.value = item.prodDate;
+                        c.numFmt = '@'; // текст
+                    }
+                    if (fieldMap['lotAtt02']) {
+                        const c = row.getCell(fieldMap['lotAtt02']);
+                        c.value = item.expDate;
+                        c.numFmt = '@'; // текст
+                    }
+                    setValue('lotAtt04', item.batch);
+
+                    row.commit();
+                });
+
+                // Скачиваем
+                const buf = await wb.xlsx.writeBuffer();
+                const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = outputName;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                status.textContent = `✅ Готово! Скачано ${asnSourceData.length} строк`;
+            } catch(err) {
+                status.textContent = '❌ Ошибка: ' + err.message;
+                console.error(err);
+            }
+        }
+        // ===== КОНЕЦ АКТ ПРИЕМКИ =====
+
     </script>
 </body>
 </html>
