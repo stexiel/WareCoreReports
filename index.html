@@ -2736,9 +2736,19 @@
                 return str;
             }
             
-            // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" -> "HH:MM:SS"
+            // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" или из объекта Date -> "HH:MM:SS"
             function extractTime(value) {
                 if (!value) return '';
+                
+                // Если это объект Date (ExcelJS возвращает Date для ячеек с датой)
+                if (value instanceof Date) {
+                    const h = String(value.getUTCHours()).padStart(2, '0');
+                    const m = String(value.getUTCMinutes()).padStart(2, '0');
+                    const s = String(value.getUTCSeconds()).padStart(2, '0');
+                    return `${h}:${m}:${s}`;
+                }
+                
+                // Если это строка, извлекаем время
                 const str = value.toString().trim();
                 const match = str.match(/\d{2}:\d{2}:\d{2}/);
                 return match ? match[0] : str;
@@ -2872,9 +2882,19 @@
                 return '';
             }
             
-            // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" -> "HH:MM:SS"
+            // Извлекаем время из формата "YYYY.MM.DD HH:MM:SS" или из объекта Date -> "HH:MM:SS"
             function extractTime(value) {
                 if (!value) return '';
+                
+                // Если это объект Date (ExcelJS возвращает Date для ячеек с датой)
+                if (value instanceof Date) {
+                    const h = String(value.getUTCHours()).padStart(2, '0');
+                    const m = String(value.getUTCMinutes()).padStart(2, '0');
+                    const s = String(value.getUTCSeconds()).padStart(2, '0');
+                    return `${h}:${m}:${s}`;
+                }
+                
+                // Если это строка, извлекаем время
                 const str = value.toString().trim();
                 const match = str.match(/\d{2}:\d{2}:\d{2}/);
                 return match ? match[0] : str;
