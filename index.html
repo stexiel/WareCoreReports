@@ -964,6 +964,14 @@
                     </svg>
                     Генератор Excel
                 </div>
+                <div class="nav-item" onclick="switchTab('palletOpt')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    Оптимизация паллет
+                </div>
             </div>
 
             <div class="nav-section">
@@ -1585,6 +1593,20 @@
                 <input type="hidden" id="shiftErrTime" value="">
             </div>
         </div>
+
+        <div id="palletOptTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Отчет по оптимизации паллет приемки</h2>
+                        <p class="card-subtitle">Пустая страница</p>
+                    </div>
+                </div>
+                <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                    <p>Страница в разработке...</p>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -1946,6 +1968,7 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
+            document.getElementById('palletOptTab').classList.add('hidden');
             document.getElementById('translatorTab').classList.add('hidden');
             document.getElementById('historyTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
@@ -2083,6 +2106,7 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
+            document.getElementById('palletOptTab').classList.add('hidden');
             document.getElementById('translatorTab').classList.add('hidden');
             document.getElementById('historyTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
