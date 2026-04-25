@@ -3695,7 +3695,7 @@
         let asnSourceData = [];   // данные из файла 1 (склад)
         let asnTemplateWb = null; // workbook шаблона (файл 2)
 
-        // Загрузка файла 1 — данные склада
+        // Загрузка файла 1 — данные склада (SheetJS — без ошибки anchors)
         document.getElementById('asnSourceFile').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -3703,46 +3703,11 @@
             status.textContent = 'Загрузка...';
             try {
                 const buf = await file.arrayBuffer();
-                const wb = new ExcelJS.Workbook();
-                await wb.xlsx.load(buf, { ignoreNodes: ['dataValidations', 'conditionalFormatting', 'picture', 'drawing', 'tableParts', 'extLst'] });
-                const ws = wb.worksheets[0];
-
-                // Ищем строку с заголовками (там где есть "Контейнер" и "Артикул")
-                let headerRow = -1;
-                let headers = {};
-                ws.eachRow((row, rn) => {
-                    if (headerRow >= 0) return;
-                    const vals = [];
-                    row.eachCell(c => vals.push((c.value || '').toString().trim()));
-                    // Ищем строку где есть и "Контейнер" и "Артикул"
-                    if (vals.some(v => v.includes('Контейнер')) && vals.some(v => v.includes('Артикул'))) {
-                        headerRow = rn;
-                        vals.forEach((v, i) => { headers[i] = v; });
-                    }
-                });
-
-                if (headerRow < 0) {
-                    status.textContent = '❌ Не найдена строка заголовков (нужны столбцы Контейнер и Артикул)';
-                    return;
-                }
-
-                // Индексы нужных столбцов
-                const colIdx = {};
-                Object.entries(headers).forEach(([i, h]) => {
-                    if (h.includes('Артикул') && !h.includes('Номенклатура'))  colIdx.artIdx = +i;
-                    if (h === 'Контейнер') colIdx.containerIdx = +i;
-                    if (h.includes('Дата производства')) colIdx.prodDateIdx = +i;
-                    if (h.includes('Срок годности'))     colIdx.expDateIdx = +i;
-                    if (h.includes('Партия номенклатуры') && !h.includes('Статус') && !h.includes('Срок') && !h.includes('Дата')) colIdx.batchIdx = +i;
-                    if (h.includes('Кол. уп.') && !h.includes('план') && !h.includes('ERP')) colIdx.qtyIdx = +i;
-                });
-
-                // Если Артикул не нашли отдельно — ищем "Номенклатура.Артикул"
-                if (colIdx.artIdx === undefined) {
-                    Object.entries(headers).forEach(([i, h]) => {
-                        if (h.includes('Артикул')) colIdx.artIdx = +i;
-                    });
-                }
+                // SheetJS читает файл без проблем с anchors/рисунками
+                const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                // Конвертируем в массив массивов (включая пустые ячейки)
+                const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
                 // Форматирование даты -> "YYYY-MM-DD" текстом
                 function fmtDate(val) {
@@ -3754,35 +3719,53 @@
                         return `${y}-${m}-${d}`;
                     }
                     const s = val.toString().trim();
-                    // уже YYYY.MM.DD или YYYY-MM-DD
                     const m1 = s.match(/(\d{4})[.\-](\d{2})[.\-](\d{2})/);
                     if (m1) return `${m1[1]}-${m1[2]}-${m1[3]}`;
-                    // DD.MM.YYYY
                     const m2 = s.match(/(\d{2})\.(\d{2})\.(\d{4})/);
                     if (m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
                     return s;
                 }
 
+                // Ищем строку с заголовками (где есть "Контейнер" и "Артикул")
+                let headerRowIdx = -1;
+                let colIdx = {};
+                for (let ri = 0; ri < rows.length; ri++) {
+                    const r = rows[ri].map(v => (v || '').toString().trim());
+                    if (r.some(v => v.includes('Контейнер')) && r.some(v => v.includes('Артикул'))) {
+                        headerRowIdx = ri;
+                        r.forEach((h, ci) => {
+                            if (h.includes('Артикул'))                                                                         colIdx.artIdx = ci;
+                            if (h === 'Контейнер')                                                                             colIdx.containerIdx = ci;
+                            if (h.includes('Дата производства'))                                                               colIdx.prodDateIdx = ci;
+                            if (h.includes('Срок годности'))                                                                   colIdx.expDateIdx = ci;
+                            if (h.includes('Партия номенклатуры') && !h.includes('Статус') && !h.includes('Срок') && !h.includes('Дата')) colIdx.batchIdx = ci;
+                            if (h.includes('Кол. уп.') && !h.includes('план') && !h.includes('ERP'))                          colIdx.qtyIdx = ci;
+                        });
+                        break;
+                    }
+                }
+
+                if (headerRowIdx < 0) {
+                    status.textContent = '❌ Не найдена строка заголовков (нужны Контейнер и Артикул)';
+                    return;
+                }
+
                 asnSourceData = [];
-                ws.eachRow((row, rn) => {
-                    if (rn <= headerRow) return;
-                    const getCell = i => (row.getCell(i + 1).value);
-                    const container = colIdx.containerIdx !== undefined ? (getCell(colIdx.containerIdx) || '').toString().trim() : '';
-                    // Пропускаем строки без контейнера или итоговые
-                    if (!container || container.toLowerCase().includes('итого') || container.length < 5) return;
-                    const art      = colIdx.artIdx      !== undefined ? (getCell(colIdx.artIdx) || '').toString().trim() : '';
-                    const prodDate = colIdx.prodDateIdx !== undefined ? fmtDate(getCell(colIdx.prodDateIdx)) : '';
-                    const expDate  = colIdx.expDateIdx  !== undefined ? fmtDate(getCell(colIdx.expDateIdx))  : '';
-                    const batch    = colIdx.batchIdx    !== undefined ? (getCell(colIdx.batchIdx) || '').toString().trim() : '';
-                    let qty = colIdx.qtyIdx !== undefined ? getCell(colIdx.qtyIdx) : '';
+                for (let ri = headerRowIdx + 1; ri < rows.length; ri++) {
+                    const r = rows[ri];
+                    const container = colIdx.containerIdx !== undefined ? (r[colIdx.containerIdx] || '').toString().trim() : '';
+                    if (!container || container.toLowerCase().includes('итого') || container.length < 5) continue;
+                    const art      = colIdx.artIdx      !== undefined ? (r[colIdx.artIdx] || '').toString().trim() : '';
+                    const prodDate = colIdx.prodDateIdx !== undefined ? fmtDate(r[colIdx.prodDateIdx]) : '';
+                    const expDate  = colIdx.expDateIdx  !== undefined ? fmtDate(r[colIdx.expDateIdx])  : '';
+                    const batch    = colIdx.batchIdx    !== undefined ? (r[colIdx.batchIdx] || '').toString().trim() : '';
+                    let qty = colIdx.qtyIdx !== undefined ? r[colIdx.qtyIdx] : 0;
                     qty = qty === null || qty === undefined || qty === '' ? 0 : (typeof qty === 'number' ? qty : parseFloat(qty.toString().replace(',','.')) || 0);
-                    if (!art && !prodDate) return;
+                    if (!art && !prodDate) continue;
                     asnSourceData.push({ container, art, prodDate, expDate, batch, qty });
-                });
+                }
 
                 status.textContent = `✅ Загружено ${asnSourceData.length} строк`;
-
-                // Показываем превью
                 showAsnPreview();
             } catch(err) {
                 status.textContent = '❌ Ошибка: ' + err.message;
