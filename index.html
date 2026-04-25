@@ -1753,12 +1753,12 @@
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label">Номер заказа (asnReference1)</label>
-                            <input type="text" id="asnReference1" class="form-input" placeholder="8422 арт">
+                            <label class="form-label">Номер заказа</label>
+                            <input type="text" id="asnReference1" class="form-input" placeholder="8422">
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label">Дата приемки (lotAtt03)</label>
-                            <input type="text" id="asnLotAtt03" class="form-input" placeholder="2026-04-26" value="">
+                            <label class="form-label">Дата приемки</label>
+                            <input type="text" id="asnLotAtt03" class="form-input" placeholder="2026-04-26">
                         </div>
                         <div class="form-group" style="margin:0;">
                             <label class="form-label">Название файла (скачать как)</label>
@@ -3749,6 +3749,16 @@
         loadSettings();
         loadCurrentTab();
 
+        // Автозаполнение сегодняшней даты в Акт приемки
+        (function() {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth()+1).padStart(2,'0');
+            const d = String(today.getDate()).padStart(2,'0');
+            const el = document.getElementById('asnLotAtt03');
+            if (el && !el.value) el.value = `${y}-${m}-${d}`;
+        })();
+
         // ===== ПОИСК ПО НАВИГАЦИИ =====
         function filterNavItems(query) {
             const q = query.trim().toLowerCase();
@@ -3826,7 +3836,8 @@
                             if (h.includes('Дата производства'))                                                               colIdx.prodDateIdx = ci;
                             if (h.includes('Срок годности'))                                                                   colIdx.expDateIdx = ci;
                             if (h.includes('Партия номенклатуры') && !h.includes('Статус') && !h.includes('Срок') && !h.includes('Дата')) colIdx.batchIdx = ci;
-                            if (h.includes('Кол. уп.') && !h.includes('план') && !h.includes('ERP'))                          colIdx.qtyIdx = ci;
+                            // qty: ищем по нескольким вариантам названий
+                            if ((h.includes('Кол') || h.includes('КОЛ') || h.includes('qty') || h.includes('QTY') || h.includes('Количество')) && !h.includes('план') && !h.includes('ERP') && !h.includes('План') && colIdx.qtyIdx === undefined) colIdx.qtyIdx = ci;
                         });
                         break;
                     }
@@ -3836,6 +3847,9 @@
                     status.textContent = '❌ Не найдена строка заголовков (нужны Контейнер и Артикул)';
                     return;
                 }
+
+                console.log('Найденные колонки:', colIdx);
+                console.log('Заголовки строки:', rows[headerRowIdx]);
 
                 asnSourceData = [];
                 for (let ri = headerRowIdx + 1; ri < rows.length; ri++) {
@@ -3847,7 +3861,9 @@
                     const expDate  = colIdx.expDateIdx  !== undefined ? fmtDate(r[colIdx.expDateIdx])  : '';
                     const batch    = colIdx.batchIdx    !== undefined ? (r[colIdx.batchIdx] || '').toString().trim() : '';
                     let qty = colIdx.qtyIdx !== undefined ? r[colIdx.qtyIdx] : 0;
-                    qty = qty === null || qty === undefined || qty === '' ? 0 : (typeof qty === 'number' ? qty : parseFloat(qty.toString().replace(',','.')) || 0);
+                    if (qty === null || qty === undefined || qty === '') qty = 0;
+                    else if (typeof qty === 'number') qty = Math.round(qty); // убираем 0.000...
+                    else qty = Math.round(parseFloat(qty.toString().replace(',','.')) || 0);
                     if (!art && !prodDate) continue;
                     asnSourceData.push({ container, art, prodDate, expDate, batch, qty });
                 }
@@ -3998,7 +4014,7 @@
                     // Из данных склада
                     setValue('sku', item.art);
                     setValue('containerId', item.container);
-                    setValue('expectedQty', item.qty);
+                    setValue('expectedQty', typeof item.qty === 'number' ? item.qty : Number(item.qty) || 0);
                     // lotAtt01, lotAtt02 — как ТЕКСТ
                     if (fieldMap['lotAtt01']) {
                         const c = row.getCell(fieldMap['lotAtt01']);
