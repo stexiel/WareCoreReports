@@ -3850,6 +3850,9 @@
 
                 console.log('Найденные колонки:', colIdx);
                 console.log('Заголовки строки:', rows[headerRowIdx]);
+                // Показываем заголовки в статусе для отладки
+                const allHeaders = rows[headerRowIdx].map((h,i) => h ? `[${i}]${h}` : '').filter(Boolean);
+                status.textContent = `🔍 Заголовки: ${allHeaders.join(' | ')}`;
 
                 asnSourceData = [];
                 for (let ri = headerRowIdx + 1; ri < rows.length; ri++) {
