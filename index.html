@@ -1725,69 +1725,100 @@
                     </div>
                 </div>
 
-                <!-- ШАГ 1: Загрузка файлов -->
+                <!-- ШАГ 1: Режим ввода -->
                 <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
                         <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
-                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Шаг 1: Загрузите файлы</h3>
+                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Шаг 1: Режим ввода данных</h3>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
-                        <div class="form-group" style="margin:0;">
-                            <label class="form-label">📦 Файл 1 — Остатки на складе</label>
-                            <input type="file" id="asnSourceFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer;">
-                            <div id="asnSourceStatus" style="font-size:11px; color:var(--text-secondary); margin-top:4px;"></div>
+                    <div style="display:flex; gap:12px; margin-bottom:16px;">
+                        <button id="modeFileBtn" class="btn btn-primary" onclick="switchAsnMode('file')" style="padding:8px 16px; font-size:13px;">Загрузка файлов</button>
+                        <button id="modeManualBtn" class="btn btn-secondary" onclick="switchAsnMode('manual')" style="padding:8px 16px; font-size:13px;">Ручной ввод</button>
+                    </div>
+
+                    <!-- Режим: Загрузка файлов -->
+                    <div id="asnFileMode" style="display:block;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:12px;">📦 Файл 1 — Остатки на складе</label>
+                                <input type="file" id="asnSourceFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer; font-size:12px;">
+                                <div id="asnSourceStatus" style="font-size:12px; color:var(--text-secondary); margin-top:4px;"></div>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:12px;">📋 Файл 2 — Шаблон ASN</label>
+                                <input type="file" id="asnTemplateFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer; font-size:12px;">
+                                <div id="asnTemplateStatus" style="font-size:12px; color:var(--text-secondary); margin-top:4px;"></div>
+                            </div>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label class="form-label">📋 Файл 2 — Шаблон ASN (для заполнения)</label>
-                            <input type="file" id="asnTemplateFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer;">
-                            <div id="asnTemplateStatus" style="font-size:11px; color:var(--text-secondary); margin-top:4px;"></div>
+                    </div>
+
+                    <!-- Режим: Ручной ввод -->
+                    <div id="asnManualMode" style="display:none;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px; align-items:center;">
+                            <label class="form-label" style="font-size:12px; margin:0;">Контейнер</label>
+                            <label class="form-label" style="font-size:12px; margin:0;">Артикул</label>
+                            <label class="form-label" style="font-size:12px; margin:0;">Дата пр-ва</label>
+                            <label class="form-label" style="font-size:12px; margin:0;">Срок годн.</label>
+                            <label class="form-label" style="font-size:12px; margin:0;">Кол-во</label>
                         </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+                            <input type="text" id="manualContainer" class="form-input" placeholder="L01..." style="font-size:12px; padding:8px;">
+                            <input type="text" id="manualSku" class="form-input" placeholder="арт" style="font-size:12px; padding:8px;">
+                            <input type="text" id="manualProdDate" class="form-input" placeholder="2026-01-01" style="font-size:12px; padding:8px;">
+                            <input type="text" id="manualExpDate" class="form-input" placeholder="2027-01-01" style="font-size:12px; padding:8px;">
+                            <input type="number" id="manualQty" class="form-input" placeholder="100" style="font-size:12px; padding:8px;">
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-primary" onclick="addManualRow()" style="padding:8px 16px; font-size:12px;">+ Добавить строку</button>
+                            <button class="btn btn-secondary" onclick="clearManualRows()" style="padding:8px 16px; font-size:12px;">Очистить все</button>
+                        </div>
+                        <div id="manualRowsPreview" style="margin-top:12px; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; font-size:12px;"></div>
                     </div>
                 </div>
 
                 <!-- ШАГ 2: Параметры -->
-                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px; text-align:center;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; justify-content:center;">
                         <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
                         <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Шаг 2: Параметры</h3>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; max-width:900px; margin:0 auto;">
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label">Номер заказа</label>
-                            <input type="text" id="asnReference1" class="form-input" placeholder="8422">
+                            <label class="form-label" style="font-size:12px;">Номер заказа</label>
+                            <input type="text" id="asnReference1" class="form-input" placeholder="8422" style="font-size:12px; padding:8px;">
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label">Дата приемки</label>
-                            <input type="text" id="asnLotAtt03" class="form-input" placeholder="2026-04-26">
+                            <label class="form-label" style="font-size:12px;">Дата приемки</label>
+                            <input type="text" id="asnLotAtt03" class="form-input" placeholder="2026-04-26" style="font-size:12px; padding:8px;">
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label">Название файла (скачать как)</label>
-                            <input type="text" id="asnOutputName" class="form-input" placeholder="asn_output.xlsx">
+                            <label class="form-label" style="font-size:12px;">Название файла</label>
+                            <input type="text" id="asnOutputName" class="form-input" placeholder="asn_output" style="font-size:12px; padding:8px;">
                         </div>
                     </div>
                 </div>
 
                 <!-- ШАГ 3: Генерировать -->
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                    <button class="btn btn-primary" onclick="generateASN()" style="padding:11px 22px; font-size:14px;">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center;">
+                    <button class="btn btn-primary" onclick="generateASN()" style="padding:11px 22px; font-size:12px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/></svg>
                         Генерировать и скачать
                     </button>
-                    <button class="btn btn-secondary" onclick="clearASN()" style="padding:11px 18px; font-size:14px;">
+                    <button class="btn btn-secondary" onclick="clearASN()" style="padding:11px 18px; font-size:12px;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
                         Очистить
                     </button>
-                    <div id="asnGenerateStatus" style="font-size:13px; color:var(--text-secondary);"></div>
+                    <div id="asnGenerateStatus" style="font-size:12px; color:var(--text-secondary);"></div>
                 </div>
 
                 <!-- Превью -->
-                <div id="asnPreview" style="display:none; margin-top:16px;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <div id="asnPreview" style="display:none; margin-top:16px; text-align:center;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; justify-content:center;">
                         <div style="width:4px; height:18px; background:#22c55e; border-radius:2px;"></div>
-                        <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Превью данных</h3>
+                        <h3 style="font-size:12px; font-weight:700; margin:0; color:var(--text-primary);">Превью данных</h3>
                         <span id="asnRowCount" style="font-size:12px; color:var(--text-secondary);"></span>
                     </div>
-                    <div style="overflow-x:auto; max-height:300px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+                    <div style="overflow-x:auto; max-height:300px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; margin:0 auto;">
                         <table id="asnPreviewTable" style="width:100%; border-collapse:collapse; font-size:12px;">
                             <thead id="asnPreviewHead" style="background:var(--surface); position:sticky; top:0;"></thead>
                             <tbody id="asnPreviewBody"></tbody>
@@ -3921,9 +3952,87 @@
             preview.style.display = 'block';
         }
 
+        // Режим ввода Акт приемки (файлы/ручной)
+        let asnInputMode = 'file'; // file или manual
+
+        function switchAsnMode(mode) {
+            asnInputMode = mode;
+            const fileMode = document.getElementById('asnFileMode');
+            const manualMode = document.getElementById('asnManualMode');
+            const fileBtn = document.getElementById('modeFileBtn');
+            const manualBtn = document.getElementById('modeManualBtn');
+
+            if (mode === 'file') {
+                fileMode.style.display = 'block';
+                manualMode.style.display = 'none';
+                fileBtn.classList.remove('btn-secondary');
+                fileBtn.classList.add('btn-primary');
+                manualBtn.classList.remove('btn-primary');
+                manualBtn.classList.add('btn-secondary');
+            } else {
+                fileMode.style.display = 'none';
+                manualMode.style.display = 'block';
+                manualBtn.classList.remove('btn-secondary');
+                manualBtn.classList.add('btn-primary');
+                fileBtn.classList.remove('btn-primary');
+                fileBtn.classList.add('btn-secondary');
+            }
+        }
+
+        // Ручной ввод данных
+        let manualRows = [];
+
+        function addManualRow() {
+            const container = document.getElementById('manualContainer').value.trim();
+            const sku = document.getElementById('manualSku').value.trim();
+            const prodDate = document.getElementById('manualProdDate').value.trim();
+            const expDate = document.getElementById('manualExpDate').value.trim();
+            const qty = parseFloat(document.getElementById('manualQty').value) || 0;
+
+            if (!container) {
+                alert('Введите контейнер');
+                return;
+            }
+
+            manualRows.push({ container, art: sku, prodDate, expDate, batch: '', qty });
+            updateManualPreview();
+            clearManualInputs();
+        }
+
+        function clearManualInputs() {
+            document.getElementById('manualContainer').value = '';
+            document.getElementById('manualSku').value = '';
+            document.getElementById('manualProdDate').value = '';
+            document.getElementById('manualExpDate').value = '';
+            document.getElementById('manualQty').value = '';
+        }
+
+        function clearManualRows() {
+            manualRows = [];
+            updateManualPreview();
+        }
+
+        function updateManualPreview() {
+            const preview = document.getElementById('manualRowsPreview');
+            if (manualRows.length === 0) {
+                preview.innerHTML = '<div style="padding:12px; text-align:center; color:var(--text-secondary);">Нет данных</div>';
+                return;
+            }
+            preview.innerHTML = manualRows.map((r, i) =>
+                `<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:8px; padding:8px; border-bottom:1px solid var(--border); font-size:12px;">
+                    <span>${r.container}</span>
+                    <span>${r.art || '-'}</span>
+                    <span>${r.prodDate || '-'}</span>
+                    <span>${r.expDate || '-'}</span>
+                    <span>${r.qty}</span>
+                </div>`
+            ).join('');
+        }
+
         // Очистка формы Акт приемки
         function clearASN() {
             asnSourceData = [];
+            manualRows = [];
             asnTemplateWb = null;
             document.getElementById('asnSourceFile').value = '';
             document.getElementById('asnTemplateFile').value = '';
@@ -3942,10 +4051,22 @@
         async function generateASN() {
             const status = document.getElementById('asnGenerateStatus');
 
-            if (!asnSourceData.length) {
-                status.textContent = '❌ Загрузите файл 1 (данные склада)';
-                return;
+            // Определяем источник данных
+            let dataSource = null;
+            if (asnInputMode === 'file') {
+                if (!asnSourceData.length) {
+                    status.textContent = '❌ Загрузите файл 1 (данные склада)';
+                    return;
+                }
+                dataSource = asnSourceData;
+            } else {
+                if (!manualRows.length) {
+                    status.textContent = '❌ Добавьте хотя бы одну строку вручную';
+                    return;
+                }
+                dataSource = manualRows;
             }
+
             if (!asnTemplateWb) {
                 status.textContent = '❌ Загрузите файл 2 (шаблон ASN)';
                 return;
@@ -3953,7 +4074,11 @@
 
             const asnRef1 = document.getElementById('asnReference1').value.trim();
             const lotAtt03 = document.getElementById('asnLotAtt03').value.trim();
-            const outputName = document.getElementById('asnOutputName').value.trim() || 'asn_output.xlsx';
+            let outputName = document.getElementById('asnOutputName').value.trim() || 'asn_output';
+            // Автоматически добавляем .xlsx если нет расширения
+            if (!outputName.toLowerCase().endsWith('.xlsx')) {
+                outputName += '.xlsx';
+            }
 
             status.textContent = 'Обработка...';
 
@@ -3999,7 +4124,7 @@
                 };
 
                 // Заполняем строки
-                asnSourceData.forEach((item, idx) => {
+                dataSource.forEach((item, idx) => {
                     const rowNum = headerRowNum + 1 + idx;
                     const row = ws.getRow(rowNum);
 
