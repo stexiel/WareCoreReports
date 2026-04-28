@@ -1754,18 +1754,20 @@
 
                     <!-- Режим: Ручной ввод -->
                     <div id="asnManualMode" style="display:none;">
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px; align-items:center;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px; align-items:center;">
                             <label class="form-label" style="font-size:12px; margin:0;">Контейнер</label>
                             <label class="form-label" style="font-size:12px; margin:0;">Артикул</label>
                             <label class="form-label" style="font-size:12px; margin:0;">Дата пр-ва</label>
                             <label class="form-label" style="font-size:12px; margin:0;">Срок годн.</label>
+                            <label class="form-label" style="font-size:12px; margin:0;">Партия</label>
                             <label class="form-label" style="font-size:12px; margin:0;">Кол-во</label>
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
                             <input type="text" id="manualContainer" class="form-input" placeholder="L01..." style="font-size:12px; padding:8px;">
                             <input type="text" id="manualSku" class="form-input" placeholder="арт" style="font-size:12px; padding:8px;">
                             <input type="text" id="manualProdDate" class="form-input" placeholder="2026-01-01" style="font-size:12px; padding:8px;">
                             <input type="text" id="manualExpDate" class="form-input" placeholder="2027-01-01" style="font-size:12px; padding:8px;">
+                            <input type="text" id="manualBatch" class="form-input" placeholder="партия" style="font-size:12px; padding:8px;">
                             <input type="number" id="manualQty" class="form-input" placeholder="100" style="font-size:12px; padding:8px;">
                         </div>
                         <div style="display:flex; gap:8px;">
@@ -3987,6 +3989,7 @@
             const sku = document.getElementById('manualSku').value.trim();
             const prodDate = document.getElementById('manualProdDate').value.trim();
             const expDate = document.getElementById('manualExpDate').value.trim();
+            const batch = document.getElementById('manualBatch').value.trim();
             const qty = parseFloat(document.getElementById('manualQty').value) || 0;
 
             if (!container) {
@@ -3994,7 +3997,7 @@
                 return;
             }
 
-            manualRows.push({ container, art: sku, prodDate, expDate, batch: '', qty });
+            manualRows.push({ container, art: sku, prodDate, expDate, batch, qty });
             updateManualPreview();
             clearManualInputs();
         }
@@ -4004,6 +4007,7 @@
             document.getElementById('manualSku').value = '';
             document.getElementById('manualProdDate').value = '';
             document.getElementById('manualExpDate').value = '';
+            document.getElementById('manualBatch').value = '';
             document.getElementById('manualQty').value = '';
         }
 
@@ -4019,11 +4023,12 @@
                 return;
             }
             preview.innerHTML = manualRows.map((r, i) =>
-                `<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:8px; padding:8px; border-bottom:1px solid var(--border); font-size:12px;">
+                `<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr; gap:8px; padding:8px; border-bottom:1px solid var(--border); font-size:12px;">
                     <span>${r.container}</span>
                     <span>${r.art || '-'}</span>
                     <span>${r.prodDate || '-'}</span>
                     <span>${r.expDate || '-'}</span>
+                    <span>${r.batch || '-'}</span>
                     <span>${r.qty}</span>
                 </div>`
             ).join('');
