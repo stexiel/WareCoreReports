@@ -6,7 +6,7 @@
     <title>WareCore Reports</title>
     <link rel="icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#6b7280">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="WareCore Reports">
@@ -14,7 +14,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -23,13 +23,13 @@
         }
         
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #3b82f6;
-            --secondary: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            --primary: #475569;
+            --primary-dark: #334155;
+            --primary-light: #64748b;
+            --secondary: #94a3b8;
+            --success: #64748b;
+            --warning: #94a3b8;
+            --danger: #64748b;
             --background: #f8fafc;
             --surface: #ffffff;
             --border: #e2e8f0;
@@ -41,21 +41,57 @@
         }
 
         [data-theme="dark"] {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --primary-light: #60a5fa;
-            --secondary: #94a3b8;
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --background: #0f172a;
-            --surface: #1e293b;
-            --border: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            --primary: #6b7280;
+            --primary-dark: #4b5563;
+            --primary-light: #9ca3af;
+            --secondary: #9ca3af;
+            --success: #6b7280;
+            --warning: #9ca3af;
+            --danger: #6b7280;
+            --background: #111827;
+            --surface: #1f2937;
+            --border: #374151;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6);
+        }
+
+        [data-theme="gray"] {
+            --primary: #6b7280;
+            --primary-dark: #4b5563;
+            --primary-light: #9ca3af;
+            --secondary: #9ca3af;
+            --success: #6b7280;
+            --warning: #9ca3af;
+            --danger: #6b7280;
+            --background: #f3f4f6;
+            --surface: #ffffff;
+            --border: #d1d5db;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="icon"] {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --secondary: #7dd3fc;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #f0f9ff;
+            --surface: #ffffff;
+            --border: #bae6fd;
+            --text-primary: #0c4a6e;
+            --text-secondary: #0ea5e9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
         [data-theme="lime"] {
@@ -347,15 +383,16 @@
             flex-direction: column;
             position: fixed;
             height: 100vh;
-            left: 0;
+            right: 0;
             top: 0;
             z-index: 100;
-            box-shadow: 2px 0 12px rgba(0,0,0,0.04);
+            box-shadow: -2px 0 12px rgba(0,0,0,0.04);
         }
 
         .logo {
             padding: 20px 20px 16px;
             border-bottom: 1px solid var(--border);
+            cursor: pointer;
         }
 
         .logo-content {
@@ -367,15 +404,8 @@
         .logo-icon {
             width: 38px;
             height: 38px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 15px;
-            letter-spacing: -0.5px;
+            object-fit: contain;
             flex-shrink: 0;
         }
 
@@ -496,7 +526,7 @@
 
         .main-content {
             flex: 1;
-            margin-left: 264px;
+            margin-right: 264px;
             padding: 32px;
         }
 
@@ -993,18 +1023,36 @@
 
         @media (max-width: 1024px) {
             .sidebar {
-                transform: translateX(-100%);
+                transform: translateX(100%);
                 transition: transform 0.3s;
             }
             .sidebar.open {
                 transform: translateX(0);
             }
             .main-content {
-                margin-left: 0;
+                margin-right: 0;
             }
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 200;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
         }
 
         @media (max-width: 640px) {
@@ -1017,14 +1065,49 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px 6px;
+            }
+            .table-container {
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 12px;
+            }
+            .card {
+                padding: 16px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            h3 {
+                font-size: 16px;
+            }
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
     <aside class="sidebar">
-        <div class="logo">
+        <div class="logo" onclick="toggleSidebar()">
             <div class="logo-content">
-                <div class="logo-icon">WC</div>
+                <img src="icon.png" class="logo-icon" alt="WareCore Logo">
                 <div>
                     <div class="logo-text">WareCore</div>
                     <div class="logo-subtitle">Reports System</div>
@@ -1042,21 +1125,17 @@
 
             <div class="nav-section" data-section="tools">
                 <div class="nav-section-title">Инструменты</div>
+                <div class="nav-item" data-label="Управление выборами" onclick="switchTab('selections')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Управление выборами
+                </div>
                 <div class="nav-item" data-label="Переводчик" onclick="switchTab('translator')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
                     Переводчик
                 </div>
-                <div class="nav-item" data-label="История" onclick="switchTab('history')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    История
-                </div>
                 <div class="nav-item" data-label="Настройки" onclick="switchTab('settings')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Настройки
-                </div>
-                <div class="nav-item" data-label="Хранилище Excel" onclick="switchTab('storage')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Хранилище Excel
                 </div>
             </div>
 
@@ -1064,9 +1143,31 @@
 
             <div class="nav-section" data-section="general">
                 <div class="nav-section-title">Общие</div>
-                <div class="nav-item" data-label="Акт приемки" onclick="switchTab('palletOpt')">
+                <div class="nav-item" data-label="Создание приемки" onclick="switchTab('palletOpt')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                    Акт приемки
+                    Создание приемки
+                </div>
+                <div class="nav-item" data-label="Приемка" onclick="switchTab('receipt')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Приемка
+                </div>
+            </div>
+
+            <div class="nav-divider"></div>
+
+            <div class="nav-section" data-section="user">
+                <div class="nav-section-title">Пользователь</div>
+                <div class="nav-item" data-label="Профиль" onclick="openProfile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Профиль
+                </div>
+                <div class="nav-item" data-label="Управление пользователями" onclick="openAdminPanel()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Управление пользователями
+                </div>
+                <div class="nav-item" data-label="Выход" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Выход
                 </div>
             </div>
 
@@ -1094,17 +1195,13 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>
                     Генератор Excel
                 </div>
+                <div class="nav-item" data-label="Автозагрузка из БД" onclick="switchTab('autodb')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    Автозагрузка из БД
+                </div>
             </div>
 
             <div class="nav-divider"></div>
-
-            <div class="nav-section" data-section="senior">
-                <div class="nav-section-title">Старшие операторы</div>
-                <div class="nav-item" data-label="Отчет оптимизации паллет приемки" onclick="switchTab('palletReport')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    Отчет оптимизации паллет
-                </div>
-            </div>
 
         </nav>
 
@@ -1137,8 +1234,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label">Единица измерения</label>
+                    <select id="quickUnit" class="form-input" style="max-width: 200px;">
+                        <option value="minutes">Минуты</option>
+                        <option value="milliseconds">Миллисекунды</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">Времена (каждая пара на новой строке через табуляцию или пробел)</label>
-                    <textarea id="quickTimeInput" class="form-input" placeholder="20:21&#9;23:41&#10;21:30&#9;00:15&#10;22:42&#9;00:45" rows="5" style="min-height: 100px;"></textarea>
+                    <textarea id="quickTimeInput" class="form-input" placeholder="20:21&#9;23:41&#10;21:30&#9;00:15&#10;22:42&#9;00:45" rows="5" style="min-height: 100px;" oninput="calculateQuick()"></textarea>
                 </div>
 
                 <div id="quickResultTable" style="display:none; margin-top: 12px;">
@@ -1147,12 +1252,12 @@
                             <tr style="background:var(--border);">
                                 <th style="padding:8px; border:1px solid var(--border); text-align:center;">Начало</th>
                                 <th style="padding:8px; border:1px solid var(--border); text-align:center;">Конец</th>
-                                <th style="padding:8px; border:1px solid var(--border); text-align:center;">Разница (мин)</th>
+                                <th style="padding:8px; border:1px solid var(--border); text-align:center;" id="quickResultHeader">Разница (мин)</th>
                             </tr>
                         </thead>
                         <tbody id="quickResultBody"></tbody>
                     </table>
-                    <div style="margin-top:10px; font-size:14px; font-weight:600;">Итого: <span id="quickResult">0</span> мин</div>
+                    <div style="margin-top:10px; font-size:14px; font-weight:600;">Итого: <span id="quickResult">0</span> <span id="quickResultUnit">мин</span></div>
                 </div>
             </div>
         </div>
@@ -1264,15 +1369,6 @@
             </div>
         </div>
 
-        <div id="historyTab" class="hidden">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">История расчётов</h2>
-                </div>
-                <p style="color: var(--text-secondary); padding: 20px;">История расчётов пока пуста.</p>
-            </div>
-        </div>
-
         <div id="translatorTab" class="hidden">
             <div class="card">
                 <div class="card-header">
@@ -1330,6 +1426,28 @@
             </div>
         </div>
 
+        <div id="selectionsTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Управление выборами</h2>
+                        <p class="card-subtitle">Добавляйте и управляйте часто используемыми значениями для общих данных</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSelection()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Добавить выбор
+                    </button>
+                </div>
+
+                <div id="selectionsList" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: var(--text-secondary); font-size: 14px;">Нет добавленных выборов</p>
+                </div>
+            </div>
+        </div>
+
         <div id="settingsTab" class="hidden">
             <div class="card">
                 <div class="card-header">
@@ -1340,12 +1458,20 @@
                     <label class="form-label">Тема оформления</label>
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
                         <button class="theme-btn" onclick="setTheme('light')" id="lightThemeBtn">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);"></div>
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);"></div>
                             <span>Светлая</span>
                         </button>
                         <button class="theme-btn" onclick="setTheme('dark')" id="darkThemeBtn">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);"></div>
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%);"></div>
                             <span>Тёмная</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('gray')" id="grayThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);"></div>
+                            <span>Серая</span>
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('icon')" id="iconThemeBtn">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);"></div>
+                            <span>Иконка</span>
                         </button>
                         <button class="theme-btn" onclick="setTheme('lime')" id="limeThemeBtn">
                             <div class="theme-preview" style="background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);"></div>
@@ -1440,41 +1566,6 @@
                     <div class="toggle-option">
                         <input type="checkbox" id="saveHistoryCheckbox" onchange="setSaveHistory(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
                         <span>Сохранять историю расчётов</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="storageTab" class="hidden">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Хранилище Excel файлов</h2>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px;">
-                    <div class="form-group">
-                        <label class="form-label">Название файла</label>
-                        <input type="text" id="storageFileName" class="form-input" placeholder="приемка шаблон">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">&nbsp;</label>
-                        <input type="file" id="storageFileInput" accept=".xlsx,.xls" class="form-input">
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" onclick="saveToStorage()" style="width: 100%; padding: 12px; margin-bottom: 24px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                        <polyline points="17 21 17 13 7 13 7 21"/>
-                        <polyline points="7 3 7 8 15 8"/>
-                    </svg>
-                    Сохранить файл
-                </button>
-
-                <div style="margin-bottom: 16px;">
-                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">Сохраненные файлы</h3>
-                    <div id="storageFileList" style="display: flex; flex-direction: column; gap: 12px;">
-                        <p style="color: var(--text-secondary); font-size: 14px;">Нет сохраненных файлов</p>
                     </div>
                 </div>
             </div>
@@ -1701,6 +1792,169 @@
             </div>
         </div>
 
+        <div id="autodbTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Автозагрузка отчётов из БД</h2>
+                        <p class="card-subtitle">Автоматическая загрузка данных из WMS/WCS и генерация Excel отчётов</p>
+                    </div>
+                </div>
+                <div style="padding:20px;">
+
+                    <!-- ══════════════════════════════════════════ -->
+                    <!-- СЕКЦИЯ 0 — АВТОЗАГРУЗКА ИЗ БД             -->
+                    <!-- ══════════════════════════════════════════ -->
+                    <div style="background:var(--surface); border:2px solid var(--primary); border-radius:10px; padding:16px; margin-bottom:20px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                            <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
+                            <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">⚡ Автозагрузка данных из БД (WMS/WCS)</h3>
+                        </div>
+
+                        <!-- Выбор смены -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Смена</label>
+                                <select id="shiftSelect" class="form-input" onchange="onShiftChange()">
+                                    <option value="currentDay">Текущая дневная (8:00-20:00)</option>
+                                    <option value="currentNight">Текущая ночная (20:00-8:00)</option>
+                                    <option value="lastDay">Прошлая дневная (8:00-20:00)</option>
+                                    <option value="lastNight">Прошлая ночная (20:00-8:00)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Дата</label>
+                                <input type="date" id="shiftDate" class="form-input" onchange="onShiftDateChange()">
+                            </div>
+                        </div>
+
+                        <!-- Время смены (автоматически) -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Начало смены</label>
+                                <input type="datetime-local" id="dbFrom" class="form-input">
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Окончание смены</label>
+                                <input type="datetime-local" id="dbTo" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- Общие данные -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Инженер WCS</label>
+                                <input type="text" id="dbInzhener" class="form-input" placeholder="Aser">
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Тех служба</label>
+                                <input type="text" id="dbTex" class="form-input" placeholder="Лёша, Владимир">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <button class="btn btn-primary" onclick="downloadBothFromDb()" id="dbDownloadBtn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Загрузить и скачать 2 файла
+                            </button>
+                            <span id="dbLoadStatus" style="font-size:12px; color:var(--text-secondary);"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="receiptTab" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Приемка</h2>
+                        <p class="card-subtitle">Мониторинг документов приемки в реальном времени</p>
+                    </div>
+                </div>
+                <div style="padding:20px;">
+
+                    <!-- Таблица документов -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                            <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
+                            <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Документы приемки</h3>
+                            <span id="receiptStatus" style="font-size:11px; color:var(--text-secondary); margin-left:auto;">Подключение к БД...</span>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table id="receiptTable" style="width:100%; border-collapse: collapse; font-size:13px;">
+                                <thead>
+                                    <tr style="background:var(--border);">
+                                        <th style="padding:10px; text-align:left; border:1px solid var(--border);">Номер документа</th>
+                                        <th style="padding:10px; text-align:left; border:1px solid var(--border);">Время начала</th>
+                                        <th style="padding:10px; text-align:left; border:1px solid var(--border);">Время окончания</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="receiptTableBody">
+                                    <tr>
+                                        <td colspan="3" style="padding:20px; text-align:center; color:var(--text-secondary);">Загрузка данных...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Модальное окно для детального просмотра -->
+                    <div id="receiptDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+                        <div style="background:var(--surface); border-radius:10px; max-width:90%; max-height:90%; overflow:auto; padding:20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                <h3 style="font-size:16px; font-weight:700; margin:0; color:var(--text-primary);">Детали документа: <span id="receiptDetailDocNum"></span></h3>
+                                <button onclick="closeReceiptDetailModal()" style="background:none; border:none; cursor:pointer; font-size:24px; color:var(--text-secondary);">&times;</button>
+                            </div>
+
+                            <!-- Фильтр по состоянию паллеты в модальном окне -->
+                            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:16px;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                                    <div style="width:4px; height:16px; background:var(--primary); border-radius:2px;"></div>
+                                    <h4 style="font-size:13px; font-weight:700; margin:0; color:var(--text-primary);">Фильтр по состоянию паллеты</h4>
+                                </div>
+                                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                                        <input type="radio" name="palletStateFilterModal" value="all" checked onchange="filterReceiptDetail()">
+                                        <span>Все</span>
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                                        <input type="radio" name="palletStateFilterModal" value="Импорт" onchange="filterReceiptDetail()">
+                                        <span>Импорт</span>
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                                        <input type="radio" name="palletStateFilterModal" value="Получен" onchange="filterReceiptDetail()">
+                                        <span>Получен</span>
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                                        <input type="radio" name="palletStateFilterModal" value="Выставлено" onchange="filterReceiptDetail()">
+                                        <span>Выставлено</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="overflow-x:auto;">
+                                <table id="receiptDetailTable" style="width:100%; border-collapse: collapse; font-size:12px;">
+                                    <thead>
+                                        <tr style="background:var(--border);">
+                                            <th style="padding:8px; text-align:left; border:1px solid var(--border);">Номер контейнера</th>
+                                            <th style="padding:8px; text-align:left; border:1px solid var(--border);">Количество</th>
+                                            <th style="padding:8px; text-align:left; border:1px solid var(--border);">Номер внешнего документа</th>
+                                            <th style="padding:8px; text-align:left; border:1px solid var(--border);">Артикул</th>
+                                            <th style="padding:8px; text-align:left; border:1px solid var(--border);">Номер партии</th>
+                                            <th style="padding:8px; text-align:left; border:1px solid var(--border);">Состояние паллеты</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="receiptDetailTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="palletReportTab" class="hidden">
             <div class="card">
                 <div class="card-header">
@@ -1720,7 +1974,7 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Акт приемки</h2>
+                        <h2 class="card-title">Создание приемки</h2>
                         <p class="card-subtitle">Загрузите два файла и получите заполненный шаблон</p>
                     </div>
                 </div>
@@ -1738,14 +1992,14 @@
 
                     <!-- Режим: Загрузка файлов -->
                     <div id="asnFileMode" style="display:block;">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div style="display:grid; grid-template-columns:1fr; gap:16px;">
                             <div class="form-group" style="margin:0;">
-                                <label class="form-label" style="font-size:12px;">📦 Файл 1 — Остатки на складе</label>
+                                <label class="form-label" style="font-size:12px;">📦 Файл — Остатки на складе</label>
                                 <input type="file" id="asnSourceFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer; font-size:12px;">
                                 <div id="asnSourceStatus" style="font-size:12px; color:var(--text-secondary); margin-top:4px;"></div>
                             </div>
                             <div class="form-group" style="margin:0;">
-                                <label class="form-label" style="font-size:12px;">📋 Файл 2 — Шаблон ASN</label>
+                                <label class="form-label" style="font-size:12px;">📋 Шаблон ASN (если не загрузился автоматически)</label>
                                 <input type="file" id="asnTemplateFile" accept=".xlsx,.xls" class="form-input" style="padding:8px; cursor:pointer; font-size:12px;">
                                 <div id="asnTemplateStatus" style="font-size:12px; color:var(--text-secondary); margin-top:4px;"></div>
                             </div>
@@ -1784,18 +2038,10 @@
                         <div style="width:4px; height:18px; background:var(--primary); border-radius:2px;"></div>
                         <h3 style="font-size:14px; font-weight:700; margin:0; color:var(--text-primary);">Шаг 2: Параметры</h3>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; max-width:900px; margin:0 auto;">
+                    <div style="display:grid; grid-template-columns:1fr; gap:12px; max-width:400px; margin:0 auto;">
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label" style="font-size:12px;">Номер заказа</label>
+                            <label class="form-label" style="font-size:12px;">Номер заказа / Название файла</label>
                             <input type="text" id="asnReference1" class="form-input" placeholder="8422" style="font-size:12px; padding:8px;">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label class="form-label" style="font-size:12px;">Дата приемки</label>
-                            <input type="text" id="asnLotAtt03" class="form-input" placeholder="2026-04-26" style="font-size:12px; padding:8px;">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label class="form-label" style="font-size:12px;">Название файла</label>
-                            <input type="text" id="asnOutputName" class="form-input" placeholder="asn_output" style="font-size:12px; padding:8px;">
                         </div>
                     </div>
                 </div>
@@ -1847,6 +2093,7 @@
 
         function quickCalculate() {
             const input = document.getElementById('quickTimeInput').value;
+            const unit = document.getElementById('quickUnit').value;
             const lines = input.trim().split('\n').filter(l => l.trim());
 
             if (lines.length === 0) {
@@ -1869,12 +2116,20 @@
                 let diff = end - start;
                 if (diff < 0) diff += 24 * 60;
 
-                totalDiff += diff;
+                // Конвертируем в миллисекунды если нужно
+                let displayDiff = diff;
+                if (unit === 'milliseconds') {
+                    displayDiff = diff * 60 * 1000;
+                    totalDiff += displayDiff;
+                } else {
+                    totalDiff += diff;
+                }
+
                 hasAny = true;
                 rows += `<tr>
                     <td style="padding:8px; border:1px solid var(--border); text-align:center;">${parts[0]}</td>
                     <td style="padding:8px; border:1px solid var(--border); text-align:center;">${parts[1]}</td>
-                    <td style="padding:8px; border:1px solid var(--border); text-align:center; font-weight:600;">${diff}</td>
+                    <td style="padding:8px; border:1px solid var(--border); text-align:center; font-weight:600;">${displayDiff.toLocaleString()}</td>
                 </tr>`;
             }
 
@@ -1883,12 +2138,19 @@
                 return;
             }
 
+            // Обновляем заголовок и единицу измерения
+            const headerText = unit === 'milliseconds' ? 'Разница (мс)' : 'Разница (мин)';
+            const unitText = unit === 'milliseconds' ? 'мс' : 'мин';
+            document.getElementById('quickResultHeader').textContent = headerText;
+            document.getElementById('quickResultUnit').textContent = unitText;
+
             document.getElementById('quickResultBody').innerHTML = rows;
-            document.getElementById('quickResult').textContent = totalDiff;
+            document.getElementById('quickResult').textContent = totalDiff.toLocaleString();
             document.getElementById('quickResultTable').style.display = 'block';
         }
 
         document.getElementById('quickTimeInput').addEventListener('input', quickCalculate);
+        document.getElementById('quickUnit').addEventListener('change', quickCalculate);
 
         function parseTime(timeStr) {
             const parts = timeStr.trim().split(':');
@@ -2190,14 +2452,27 @@
             document.getElementById('pairsTab').classList.add('hidden');
             document.getElementById('palletTab').classList.add('hidden');
             document.getElementById('excelTab').classList.add('hidden');
+            document.getElementById('autodbTab').classList.add('hidden');
             document.getElementById('palletOptTab').classList.add('hidden');
             document.getElementById('palletReportTab').classList.add('hidden');
             document.getElementById('translatorTab').classList.add('hidden');
-            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById('selectionsTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
-            document.getElementById('storageTab').classList.add('hidden');
+            document.getElementById('receiptTab').classList.add('hidden');
 
             document.getElementById(tab + 'Tab').classList.remove('hidden');
+
+            // Инициализация селектора смен при открытии вкладки автозагрузки
+            if (tab === 'autodb') {
+                setTimeout(() => initShiftSelector(), 100);
+            }
+
+            // Запуск стриминга данных приемки при открытии вкладки
+            if (tab === 'receipt') {
+                startReceiptStreaming();
+            } else {
+                stopReceiptStreaming();
+            }
 
             // Сохраняем текущую вкладку
             localStorage.setItem('currentTab', tab);
@@ -2226,8 +2501,10 @@
 
         // Цвета для meta theme-color по темам
         const themeColors = {
-            'light': '#2563eb',
-            'dark': '#1e293b',
+            'light': '#475569',
+            'dark': '#6b7280',
+            'gray': '#6b7280',
+            'icon': '#0ea5e9',
             'lime': '#84cc16',
             'purple': '#8b5cf6',
             'blue': '#2563eb',
@@ -2264,7 +2541,7 @@
         }
 
         function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            const savedTheme = localStorage.getItem('theme') || 'gray';
             setTheme(savedTheme);
         }
 
@@ -2335,9 +2612,8 @@
             document.getElementById('palletOptTab').classList.add('hidden');
             document.getElementById('palletReportTab').classList.add('hidden');
             document.getElementById('translatorTab').classList.add('hidden');
-            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById('selectionsTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
-            document.getElementById('storageTab').classList.add('hidden');
 
             // Показываем сохранённую вкладку
             const tab = document.getElementById(savedTab + 'Tab');
@@ -2499,6 +2775,11 @@
                 return;
             }
 
+            buildExcelDataFromParsedRows(parsedRows);
+        }
+
+        // Общая логика построения excelData + статистики (используется парсингом текста и автозагрузкой из БД)
+        function buildExcelDataFromParsedRows(parsedRows) {
             // Строим excelData
             excelData = parsedRows.map(row => ({
                 time:      row.startTime,
@@ -2610,35 +2891,397 @@
             } catch(e) { console.error('clearExcelData error:', e); }
         }
 
+        // ===== АВТОЗАГРУЗКА ДАННЫХ ИЗ БД (WMS_1386 / WCS_1386 через backend) =====
+
+        function getApiBase() {
+            return `${location.protocol}//${location.hostname}:3000`;
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        function getUserRole() {
+            return localStorage.getItem('userRole');
+        }
+
+        function isAuthenticated() {
+            return !!getAuthToken();
+        }
+
+        function isAdmin() {
+            return getUserRole() === 'admin';
+        }
+
+        function isOperator() {
+            return getUserRole() === 'operator';
+        }
+
+        function isWarehouseman() {
+            return getUserRole() === 'warehouseman';
+        }
+
+        function logout() {
+            const token = getAuthToken();
+            if (token) {
+                fetch(`${getApiBase()}/api/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }).catch(err => console.error('Ошибка выхода:', err));
+            }
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userId');
+            window.location.href = 'login.html';
+        }
+
+        // Проверяем авторизацию при загрузке
+        if (!isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        // Скрываем элементы навигации в зависимости от роли
+        function applyRoleRestrictions() {
+            if (isWarehouseman()) {
+                // Кладовщик видит только "Приемка"
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    const label = item.getAttribute('data-label');
+                    if (label !== 'Приемка' && label !== 'Выход') {
+                        item.style.display = 'none';
+                    }
+                });
+                // Скрываем секции кроме "Общие"
+                const navSections = document.querySelectorAll('.nav-section');
+                navSections.forEach(section => {
+                    const sectionName = section.getAttribute('data-section');
+                    if (sectionName !== 'general' && sectionName !== 'user') {
+                        section.style.display = 'none';
+                    }
+                });
+                // Автоматически переключаем на приемку
+                setTimeout(() => switchTab('receipt'), 100);
+            } else if (isOperator()) {
+                // Оператор видит всё кроме админки
+                const adminSection = document.querySelector('.nav-section[data-section="user"]');
+                if (adminSection) adminSection.style.display = 'none';
+            }
+            // Admin видит всё
+        }
+
+        // Вызываем после загрузки DOM
+        document.addEventListener('DOMContentLoaded', applyRoleRestrictions);
+
+        function openAdminPanel() {
+            if (!isAdmin()) {
+                alert('Доступ запрещен. Требуются права администратора.');
+                return;
+            }
+            window.location.href = 'admin.html';
+        }
+
+        function openProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        async function fetchJSON(url) {
+            const res = await fetch(url);
+            if (!res.ok) {
+                let msg = `HTTP ${res.status}`;
+                try { const j = await res.json(); if (j.error) msg = j.error; } catch(e) {}
+                throw new Error(msg);
+            }
+            return res.json();
+        }
+
+        // Извлекает "HH:MM:SS" из ISO-строки датавремени
+        function extractHMS(isoOrDate) {
+            if (!isoOrDate) return '';
+            const s = isoOrDate.toString();
+            const m = s.match(/T(\d{2}:\d{2}:\d{2})/);
+            return m ? m[1] : '';
+        }
+
+        function onShiftChange() {
+            const shiftSelect = document.getElementById('shiftSelect');
+            const shiftDate = document.getElementById('shiftDate');
+            const fromEl = document.getElementById('dbFrom');
+            const toEl = document.getElementById('dbTo');
+
+            if (!shiftSelect || !shiftDate || !fromEl || !toEl) {
+                console.error('Элементы не найдены');
+                return;
+            }
+
+            const shift = shiftSelect.value;
+            const dateStr = shiftDate.value;
+            if (!dateStr) {
+                console.error('Дата не установлена');
+                return;
+            }
+
+            const date = new Date(dateStr);
+            let from, to;
+
+            switch(shift) {
+                case 'currentDay':
+                    // Дневная смена: 8:00 - 20:00
+                    from = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 8, 0, 0);
+                    to = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 19, 59, 59);
+                    break;
+                case 'currentNight':
+                    // Ночная смена: 20:00 - 8:00 следующего дня
+                    from = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 20, 0, 0);
+                    to = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 7, 59, 59);
+                    break;
+                case 'lastDay':
+                    // Прошлая дневная: 8:00 - 20:00
+                    from = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 8, 0, 0);
+                    to = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 19, 59, 59);
+                    break;
+                case 'lastNight':
+                    // Прошлая ночная: 20:00 - 8:00 следующего дня
+                    from = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 20, 0, 0);
+                    to = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 7, 59, 59);
+                    break;
+                default:
+                    console.error('Неизвестное значение смены:', shift);
+                    return;
+            }
+
+            fromEl.value = toLocalISOString(from);
+            toEl.value = toLocalISOString(to);
+            console.log('Установлено время:', fromEl.value, '-', toEl.value);
+        }
+
+        function onShiftDateChange() {
+            onShiftChange();
+        }
+
+        function initShiftSelector() {
+            const shiftSelect = document.getElementById('shiftSelect');
+            const shiftDate = document.getElementById('shiftDate');
+            const now = new Date();
+            const hour = now.getHours();
+
+            // Определяем текущую смену
+            if (hour >= 8 && hour < 20) {
+                // Дневная смена
+                shiftSelect.value = 'currentDay';
+            } else {
+                // Ночная смена
+                shiftSelect.value = 'currentNight';
+            }
+
+            // Устанавливаем текущую дату
+            shiftDate.value = now.toISOString().split('T')[0];
+
+            // Обновляем время
+            onShiftChange();
+        }
+
+        function toLocalISOString(date) {
+            const offset = date.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(date - offset)).toISOString().slice(0, 16);
+            return localISOTime;
+        }
+
+        async function loadFromDatabase() {
+            const status = document.getElementById('dbLoadStatus');
+            const fromEl = document.getElementById('dbFrom');
+            const toEl = document.getElementById('dbTo');
+            const from = fromEl.value;
+            const to = toEl.value;
+
+            if (!from || !to) {
+                if (status) status.textContent = '❌ Укажите начало и окончание смены';
+                return;
+            }
+
+            const base = getApiBase();
+
+            const btn = document.getElementById('dbLoadBtn');
+            if (btn) btn.disabled = true;
+            if (status) status.textContent = '⏳ Загрузка из БД...';
+
+            try {
+                const qs = `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+                const [faultRes, shipRes, recvRes, palletRes] = await Promise.all([
+                    fetchJSON(`${base}/api/fault-report?${qs}`),
+                    fetchJSON(`${base}/api/shipment?${qs}`),
+                    fetchJSON(`${base}/api/receipt?${qs}`),
+                    fetchJSON(`${base}/api/pallets?${qs}`)
+                ]);
+
+                // ---- 1. Ошибки штабелеров (eqpt_fault_record) ----
+                const parsedRows = faultRes.rows
+                    .filter(r => r.stacker)
+                    .map(r => ({
+                        startTime: extractHMS(r.beginTime),
+                        endTime:   extractHMS(r.finishTime),
+                        startISO:  (r.beginTime || '').substring(0, 19),
+                        rawStart:  extractHMS(r.beginTime),
+                        rawEnd:    extractHMS(r.finishTime),
+                        stacker:   r.stacker
+                    }));
+                if (parsedRows.length > 0) {
+                    buildExcelDataFromParsedRows(parsedRows);
+                } else {
+                    excelData = [];
+                    updateExcelPreview();
+                    saveExcelData();
+                }
+
+                // ---- 2. Отгрузка (out_delivering_bill) ----
+                document.getElementById('shipmentRows').innerHTML = '';
+                shipmentCount = 0;
+                shipRes.rows.forEach(r => {
+                    shipmentCount++;
+                    document.getElementById('shipmentRows').insertAdjacentHTML('beforeend', makeRowHtml('ship', shipmentCount));
+                    document.getElementById(`shipKis${shipmentCount}`).value   = r.bill_no || '';
+                    document.getElementById(`shipQty${shipmentCount}`).value   = r.qty || 0;
+                    document.getElementById(`shipStart${shipmentCount}`).value = extractHMS(r.start_time);
+                    document.getElementById(`shipEnd${shipmentCount}`).value   = extractHMS(r.end_time);
+                });
+
+                // ---- 3. Приемка (in_receiving_bill) ----
+                document.getElementById('receiptRows').innerHTML = '';
+                receiptCount = 0;
+                recvRes.rows.forEach(r => {
+                    receiptCount++;
+                    document.getElementById('receiptRows').insertAdjacentHTML('beforeend', makeRowHtml('recv', receiptCount));
+                    document.getElementById(`recvKis${receiptCount}`).value   = r.bill_no || '';
+                    document.getElementById(`recvQty${receiptCount}`).value   = r.qty || 0;
+                    document.getElementById(`recvStart${receiptCount}`).value = extractHMS(r.start_time);
+                    document.getElementById(`recvEnd${receiptCount}`).value   = extractHMS(r.end_time);
+                });
+                saveShiftRows();
+
+                // ---- 4. Паллеты D1/D2 (inv_container) ----
+                const palletLines = [];
+                palletRes.paired.forEach(p => { palletLines.push(p.id + 'D1'); palletLines.push(p.id + 'D2'); });
+                palletRes.unpaired.forEach(p => { palletLines.push(p.id + (p.missing === 'D2' ? 'D1' : 'D2')); });
+                const ppInput = document.getElementById('shiftPalletsInput');
+                if (ppInput) { ppInput.value = palletLines.join('\n'); saveField('shiftPalletsInput'); }
+                calcShiftPallets();
+
+                if (status) status.textContent = `✅ Загружено: ошибок ${parsedRows.length}, отгрузка ${shipRes.rows.length}, приемка ${recvRes.rows.length}, паллет ${palletRes.totalRows}`;
+            } catch (err) {
+                console.error('loadFromDatabase error:', err);
+                if (status) status.textContent = '❌ Ошибка: ' + err.message;
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function downloadBothFromDb() {
+            await loadFromDatabase();
+            const status = document.getElementById('dbLoadStatus');
+            if (status && status.textContent.startsWith('❌')) return;
+
+            // Копируем данные из полей автозагрузки в поля генератора
+            const dbInzhener = document.getElementById('dbInzhener').value;
+            const dbTex = document.getElementById('dbTex').value;
+            if (dbInzhener) document.getElementById('excelInzhener').value = dbInzhener;
+            if (dbTex) document.getElementById('excelTex').value = dbTex;
+
+            await generateBothReports();
+        }
+
         function updateExcelPreview() {
             const preview = document.getElementById('excelPreview');
-            
+
             if (excelData.length === 0) {
                 preview.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Нет добавленных строк</p>';
                 return;
             }
 
-            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+            let html = '<div style="margin-bottom: 10px;">';
+            html += '<button class="btn btn-secondary" onclick="addExcelRow()" style="padding: 6px 12px; font-size: 12px;">+ Добавить строку</button>';
+            html += '</div>';
+
+            html += '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
             html += '<thead><tr style="background: var(--border);">';
-            html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Дата</th>';
             html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Время</th>';
-            for (let i = 1; i <= 10; i++) {
-                html += `<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">${i}-штабелер</th>`;
-            }
+            html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Окончание</th>';
+            html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Штабелер</th>';
+            html += '<th style="padding: 8px; text-align: left; border: 1px solid var(--border);">Действия</th>';
             html += '</tr></thead><tbody>';
 
-            excelData.forEach(row => {
+            excelData.forEach((row, index) => {
                 html += '<tr>';
-                html += `<td style="padding: 8px; border: 1px solid var(--border);">${row.date}</td>`;
-                html += `<td style="padding: 8px; border: 1px solid var(--border);">${row.time}</td>`;
-                row.statuses.forEach(status => {
-                    html += `<td style="padding: 8px; border: 1px solid var(--border);">${status}</td>`;
-                });
+                html += `<td style="padding: 8px; border: 1px solid var(--border);" contenteditable="true" onblur="updateExcelRow(${index}, 'time', this.textContent)">${row.time}</td>`;
+                html += `<td style="padding: 8px; border: 1px solid var(--border);" contenteditable="true" onblur="updateExcelRow(${index}, 'endTime', this.textContent)">${row.endTime}</td>`;
+                html += `<td style="padding: 8px; border: 1px solid var(--border);" contenteditable="true" onblur="updateExcelRow(${index}, 'stacker', this.textContent)">${row.stacker}</td>`;
+                html += `<td style="padding: 8px; border: 1px solid var(--border); text-align: center;">`;
+                html += `<button onclick="deleteExcelRow(${index})" style="padding: 4px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>`;
+                html += '</td>';
                 html += '</tr>';
             });
 
             html += '</tbody></table>';
             preview.innerHTML = html;
+        }
+
+        function addExcelRow() {
+            excelData.push({
+                time: '00:00:00',
+                endTime: '00:00:00',
+                startISO: new Date().toISOString(),
+                stacker: 1,
+                statuses: Array(10).fill('').map((_, i) => i === 0 ? 'F06' : '')
+            });
+            updateExcelPreview();
+            updateStats();
+        }
+
+        function deleteExcelRow(index) {
+            excelData.splice(index, 1);
+            updateExcelPreview();
+            updateStats();
+        }
+
+        function updateExcelRow(index, field, value) {
+            if (field === 'stacker') {
+                excelData[index][field] = parseInt(value) || 1;
+                // Обновляем statuses
+                excelData[index].statuses = Array(10).fill('').map((_, i) => i + 1 === excelData[index].stacker ? 'F06' : '');
+            } else {
+                excelData[index][field] = value;
+            }
+            updateStats();
+        }
+
+        function updateStats() {
+            // Пересчитываем статистику
+            let totalErrorMinutes = 0;
+            let totalVOTSMinutes = 0;
+
+            for (const row of excelData) {
+                if (row.time && row.endTime) {
+                    const toSec = t => {
+                        const p = t.split(':');
+                        return parseInt(p[0]) * 3600 + parseInt(p[1]) * 60 + parseInt(p[2] || 0);
+                    };
+                    let diff = toSec(row.endTime) - toSec(row.time);
+                    if (diff < 0) diff += 24 * 3600;
+                    const diffMinutes = Math.round(diff / 60);
+                    totalErrorMinutes += diffMinutes;
+
+                    if (diffMinutes <= 15) {
+                        totalVOTSMinutes += Math.max(0, diffMinutes - 2);
+                    } else {
+                        totalVOTSMinutes += Math.round(diffMinutes / 2);
+                    }
+                }
+            }
+
+            document.getElementById('statErrCount').textContent = excelData.length;
+            document.getElementById('statErrTime').textContent = totalErrorMinutes;
+            document.getElementById('shiftVOTS').textContent = totalVOTSMinutes;
         }
 
         async function generateExcel() {
@@ -3371,6 +4014,7 @@
 
             // ── БЛОК 1: ОШИБКА (розовый — 2 колонки)
             addSectionHeader('Ошибка', BEIGE_HDR, 2);
+
             const errRows = [
                 ['Количество ошибок',                errCount],
                 ['Время когда Робот был в ошибке',   `${errTime} минут`],
@@ -3760,6 +4404,9 @@
             renderTranslationHistory();
             renderStorageList();
 
+            // Инициализация селектора смен
+            initShiftSelector();
+
             // Вешаем автосохранение на все поля
             PERSIST_IDS.forEach(id => {
                 const el = document.getElementById(id);
@@ -3824,9 +4471,14 @@
 
         let asnSourceData = [];   // данные из файла 1 (склад)
         let asnTemplateWb = null; // workbook шаблона (файл 2)
+        let asnTemplateLoaded = false; // флаг загрузки шаблона
 
         // Загрузка файла 1 — данные склада (SheetJS — без ошибки anchors)
         document.getElementById('asnSourceFile').addEventListener('change', async function(e) {
+            // Очищаем старые данные перед загрузкой нового файла
+            asnSourceData = [];
+            document.getElementById('asnPreview').style.display = 'none';
+            
             const file = e.target.files[0];
             if (!file) return;
             const status = document.getElementById('asnSourceStatus');
@@ -3859,6 +4511,7 @@
                 // Ищем строку с заголовками (где есть "Контейнер" и "Артикул")
                 let headerRowIdx = -1;
                 let colIdx = {};
+                let qtyCandidates = []; // все возможные колонки для количества
                 for (let ri = 0; ri < rows.length; ri++) {
                     const r = rows[ri].map(v => (v || '').toString().trim());
                     if (r.some(v => v.includes('Контейнер')) && r.some(v => v.includes('Артикул'))) {
@@ -3869,8 +4522,14 @@
                             if (h.includes('Дата производства'))                                                               colIdx.prodDateIdx = ci;
                             if (h.includes('Срок годности'))                                                                   colIdx.expDateIdx = ci;
                             if (h.includes('Партия номенклатуры') && !h.includes('Статус') && !h.includes('Срок') && !h.includes('Дата')) colIdx.batchIdx = ci;
-                            // qty: ищем по нескольким вариантам названий
-                            if ((h.includes('Кол') || h.includes('КОЛ') || h.includes('qty') || h.includes('QTY') || h.includes('Количество')) && !h.includes('план') && !h.includes('ERP') && !h.includes('План') && colIdx.qtyIdx === undefined) colIdx.qtyIdx = ci;
+                            // qty: собираем все кандидаты
+                            if ((h.includes('Кол') || h.includes('КОЛ') || h.includes('qty') || h.includes('QTY') || h.includes('Количество'))) {
+                                qtyCandidates.push({ idx: ci, name: h });
+                                // Помечаем "Кол. уп." отдельно
+                                if (h.includes('уп') || h.includes('УП') || h.includes('упаков')) {
+                                    colIdx.qtyPackIdx = ci;
+                                }
+                            }
                         });
                         break;
                     }
@@ -3882,6 +4541,7 @@
                 }
 
                 console.log('Найденные колонки:', colIdx);
+                console.log('Кандидаты для количества:', qtyCandidates);
                 console.log('Заголовки строки:', rows[headerRowIdx]);
                 // Показываем заголовки в статусе для отладки
                 const allHeaders = rows[headerRowIdx].map((h,i) => h ? `[${i}]${h}` : '').filter(Boolean);
@@ -3896,10 +4556,36 @@
                     const prodDate = colIdx.prodDateIdx !== undefined ? fmtDate(r[colIdx.prodDateIdx]) : '';
                     const expDate  = colIdx.expDateIdx  !== undefined ? fmtDate(r[colIdx.expDateIdx])  : '';
                     const batch    = colIdx.batchIdx    !== undefined ? (r[colIdx.batchIdx] || '').toString().trim() : '';
-                    let qty = colIdx.qtyIdx !== undefined ? r[colIdx.qtyIdx] : 0;
-                    if (qty === null || qty === undefined || qty === '') qty = 0;
-                    else if (typeof qty === 'number') qty = Math.round(qty); // убираем 0.000...
-                    else qty = Math.round(parseFloat(qty.toString().replace(',','.')) || 0);
+
+                    // Логика для количества: если "Кол. уп." = 1 или пусто, используем другую колонку
+                    let qty = 0;
+                    const qtyPackValue = colIdx.qtyPackIdx !== undefined ? r[colIdx.qtyPackIdx] : null;
+                    const qtyPackNum = qtyPackValue ? parseFloat(qtyPackValue.toString().replace(',','.')) : null;
+
+                    console.log(`Строка ${ri}: Кол. уп. = ${qtyPackValue} -> ${qtyPackNum}, кандидаты:`, qtyCandidates.map(c => `${c.name}=${r[c.idx]}`));
+
+                    // Если есть "Кол. уп." и он не равен 1 и не пустой, используем его
+                    if (qtyPackNum !== null && qtyPackNum !== 1 && qtyPackNum > 0) {
+                        qty = qtyPackNum;
+                        console.log(`Используем Кол. уп.: ${qty}`);
+                    } else {
+                        // Иначе ищем другую колонку с количеством
+                        for (const cand of qtyCandidates) {
+                            if (cand.idx === colIdx.qtyPackIdx) continue; // пропускаем "Кол. уп."
+                            const val = r[cand.idx];
+                            if (val !== null && val !== undefined && val !== '') {
+                                const num = parseFloat(val.toString().replace(',','.'));
+                                if (!isNaN(num) && num > 0) {
+                                    qty = num;
+                                    console.log(`Используем ${cand.name}: ${num}`);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (typeof qty === 'number') qty = Math.round(qty); // убираем 0.000...
+                    console.log(`Финальное qty: ${qty}`);
                     if (!art && !prodDate) continue;
                     asnSourceData.push({ container, art, prodDate, expDate, batch, qty });
                 }
@@ -3912,7 +4598,7 @@
             }
         });
 
-        // Загрузка файла 2 — шаблон ASN
+        // Загрузка файла 2 — шаблон ASN (ручная загрузка как fallback)
         document.getElementById('asnTemplateFile').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -3923,6 +4609,7 @@
                 const wb = new ExcelJS.Workbook();
                 await wb.xlsx.load(buf, { ignoreNodes: ['dataValidations', 'conditionalFormatting', 'picture', 'drawing', 'tableParts', 'extLst'] });
                 asnTemplateWb = { wb, buf };
+                asnTemplateLoaded = true;
                 status.textContent = `✅ Шаблон загружен (листов: ${wb.worksheets.length})`;
             } catch(err) {
                 status.textContent = '❌ Ошибка: ' + err.message;
@@ -4038,14 +4725,11 @@
         function clearASN() {
             asnSourceData = [];
             manualRows = [];
-            asnTemplateWb = null;
             document.getElementById('asnSourceFile').value = '';
             document.getElementById('asnTemplateFile').value = '';
             document.getElementById('asnSourceStatus').textContent = '';
             document.getElementById('asnTemplateStatus').textContent = '';
             document.getElementById('asnReference1').value = '';
-            document.getElementById('asnLotAtt03').value = '';
-            document.getElementById('asnOutputName').value = '';
             document.getElementById('asnGenerateStatus').textContent = '';
             document.getElementById('asnPreview').style.display = 'none';
             document.getElementById('asnPreviewHead').innerHTML = '';
@@ -4072,14 +4756,18 @@
                 dataSource = manualRows;
             }
 
+            // Загружаем шаблон если еще не загружен
+            if (!asnTemplateLoaded) {
+                await loadDefaultTemplate();
+            }
+
             if (!asnTemplateWb) {
-                status.textContent = '❌ Загрузите файл 2 (шаблон ASN)';
+                status.textContent = '❌ Не удалось загрузить шаблон';
                 return;
             }
 
             const asnRef1 = document.getElementById('asnReference1').value.trim();
-            const lotAtt03 = document.getElementById('asnLotAtt03').value.trim();
-            let outputName = document.getElementById('asnOutputName').value.trim() || 'asn_output';
+            let outputName = asnRef1 || 'asn_output';
             // Автоматически добавляем .xlsx если нет расширения
             if (!outputName.toLowerCase().endsWith('.xlsx')) {
                 outputName += '.xlsx';
@@ -4134,7 +4822,23 @@
                     const row = ws.getRow(rowNum);
 
                     const setValue = (field, val) => {
-                        if (fieldMap[field]) row.getCell(fieldMap[field]).value = val;
+                        if (fieldMap[field]) {
+                            const cell = row.getCell(fieldMap[field]);
+                            cell.value = val;
+                            // Выравнивание по центру
+                            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                            // Шрифт Calibri 12 для строк кроме первых двух
+                            if (rowNum > 2) {
+                                cell.font = { name: 'Calibri', size: 12 };
+                            }
+                            // Границы для всех ячеек
+                            cell.border = {
+                                top: { style: 'thin' },
+                                left: { style: 'thin' },
+                                bottom: { style: 'thin' },
+                                right: { style: 'thin' }
+                            };
+                        }
                     };
 
                     // Фиксированные
@@ -4142,7 +4846,6 @@
 
                     // Из параметров
                     setValue('asnReference1', asnRef1);
-                    setValue('lotAtt03', lotAtt03); // текст
 
                     // Из данных склада
                     setValue('sku', item.art);
@@ -4153,11 +4856,31 @@
                         const c = row.getCell(fieldMap['lotAtt01']);
                         c.value = item.prodDate;
                         c.numFmt = '@'; // текст
+                        c.alignment = { horizontal: 'center', vertical: 'middle' };
+                        if (rowNum > 2) {
+                            c.font = { name: 'Calibri', size: 12 };
+                        }
+                        c.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' }
+                        };
                     }
                     if (fieldMap['lotAtt02']) {
                         const c = row.getCell(fieldMap['lotAtt02']);
                         c.value = item.expDate;
                         c.numFmt = '@'; // текст
+                        c.alignment = { horizontal: 'center', vertical: 'middle' };
+                        if (rowNum > 2) {
+                            c.font = { name: 'Calibri', size: 12 };
+                        }
+                        c.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' }
+                        };
                     }
                     setValue('lotAtt04', item.batch);
 
@@ -4181,6 +4904,254 @@
             }
         }
         // ===== КОНЕЦ АКТ ПРИЕМКИ =====
+
+        // ===== СТРАНИЦА ПРИЕМКИ - СТРИМИНГ ДАННЫХ =====
+        let receiptStreamingInterval = null;
+        let receiptDocuments = [];
+        let receiptDetailData = [];
+
+        function startReceiptStreaming() {
+            if (receiptStreamingInterval) {
+                clearInterval(receiptStreamingInterval);
+            }
+            loadReceiptDocuments();
+            receiptStreamingInterval = setInterval(loadReceiptDocuments, 5000); // Обновление каждые 5 секунд
+        }
+
+        function stopReceiptStreaming() {
+            if (receiptStreamingInterval) {
+                clearInterval(receiptStreamingInterval);
+                receiptStreamingInterval = null;
+            }
+        }
+
+        async function loadReceiptDocuments() {
+            const status = document.getElementById('receiptStatus');
+            const tableBody = document.getElementById('receiptTableBody');
+
+            try {
+                const base = getApiBase();
+                const token = getAuthToken();
+                const response = await fetch(`${base}/api/receipt-documents`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) throw new Error('Ошибка загрузки данных');
+
+                const data = await response.json();
+                receiptDocuments = data;
+                renderReceiptTable();
+                if (status) status.textContent = 'Обновлено: ' + new Date().toLocaleTimeString();
+            } catch (err) {
+                console.error('Ошибка загрузки документов приемки:', err);
+                if (status) status.textContent = 'Ошибка: ' + err.message;
+                if (tableBody) {
+                    tableBody.innerHTML = '<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--text-secondary);">Ошибка загрузки данных</td></tr>';
+                }
+            }
+        }
+
+        function renderReceiptTable() {
+            const tableBody = document.getElementById('receiptTableBody');
+
+            if (receiptDocuments.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--text-secondary);">Нет данных</td></tr>';
+                return;
+            }
+
+            let html = '';
+            receiptDocuments.forEach(doc => {
+                html += '<tr style="cursor:pointer;" onclick="openReceiptDetailPage(\'' + doc.docNumber + '\')">';
+                html += '<td style="padding:10px; border:1px solid var(--border);">' + doc.docNumber + '</td>';
+                html += '<td style="padding:10px; border:1px solid var(--border);">' + doc.startTime + '</td>';
+                html += '<td style="padding:10px; border:1px solid var(--border);">' + doc.endTime + '</td>';
+                html += '</tr>';
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function openReceiptDetailPage(docNumber) {
+            window.location.href = 'receipt-detail.html?docNumber=' + encodeURIComponent(docNumber);
+        }
+
+        async function showReceiptDetail(docNumber) {
+            const modal = document.getElementById('receiptDetailModal');
+            const docNumSpan = document.getElementById('receiptDetailDocNum');
+            const tableBody = document.getElementById('receiptDetailTableBody');
+
+            docNumSpan.textContent = docNumber;
+            tableBody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center;">Загрузка...</td></tr>';
+            modal.style.display = 'flex';
+
+            // Сбрасываем фильтр на "Все"
+            const filterAll = document.querySelector('input[name="palletStateFilterModal"][value="all"]');
+            if (filterAll) filterAll.checked = true;
+
+            try {
+                const base = getApiBase();
+                const response = await fetch(`${base}/api/receipt-detail?docNumber=${encodeURIComponent(docNumber)}`);
+                if (!response.ok) throw new Error('Ошибка загрузки деталей');
+
+                const data = await response.json();
+                receiptDetailData = data;
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center;">Нет данных</td></tr>';
+                    return;
+                }
+
+                renderReceiptDetailTable();
+            } catch (err) {
+                console.error('Ошибка загрузки деталей документа:', err);
+                tableBody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center;">Ошибка загрузки</td></tr>';
+            }
+        }
+
+        function renderReceiptDetailTable() {
+            const tableBody = document.getElementById('receiptDetailTableBody');
+            const filter = document.querySelector('input[name="palletStateFilterModal"]:checked').value;
+
+            const filteredData = filter === 'all' ? receiptDetailData : receiptDetailData.filter(row => row.palletState === filter);
+
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center;">Нет данных</td></tr>';
+                return;
+            }
+
+            let html = '';
+            filteredData.forEach(row => {
+                html += '<tr>';
+                html += '<td style="padding:8px; border:1px solid var(--border);">' + row.containerNumber + '</td>';
+                html += '<td style="padding:8px; border:1px solid var(--border);">' + row.quantity + '</td>';
+                html += '<td style="padding:8px; border:1px solid var(--border);">' + row.externalDocNumber + '</td>';
+                html += '<td style="padding:8px; border:1px solid var(--border);">' + row.article + '</td>';
+                html += '<td style="padding:8px; border:1px solid var(--border);">' + row.batchNumber + '</td>';
+                html += '<td style="padding:8px; border:1px solid var(--border);">' + row.palletState + '</td>';
+                html += '</tr>';
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function filterReceiptDetail() {
+            renderReceiptDetailTable();
+        }
+
+        function closeReceiptDetailModal() {
+            document.getElementById('receiptDetailModal').style.display = 'none';
+        }
+        // ===== КОНЕЦ СТРАНИЦА ПРИЕМКИ =====
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+
+        // Автоматическая загрузка шаблона Приемки шаблон.xlsx
+        async function autoLoadTemplate() {
+            try {
+                const response = await fetch('Приемки шаблон.xlsx');
+                if (!response.ok) return;
+                const buf = await response.arrayBuffer();
+                const wb = new ExcelJS.Workbook();
+                await wb.xlsx.load(buf, { ignoreNodes: ['dataValidations', 'conditionalFormatting', 'picture', 'drawing', 'tableParts', 'extLst'] });
+                asnTemplateWb = { wb, buf };
+                asnTemplateLoaded = true;
+                const status = document.getElementById('asnTemplateStatus');
+                if (status) status.textContent = '✅ Шаблон загружен автоматически';
+            } catch (err) {
+                console.log('Автозагрузка шаблона не удалась (нормально для локального файла)');
+            }
+        }
+
+        // Запускаем автозагрузку при инициализации
+        autoLoadTemplate();
+
+        // ===== УПРАВЛЕНИЕ ВЫБОРАМИ =====
+
+        let selections = [];
+
+        function loadSelections() {
+            const saved = localStorage.getItem('selections');
+            if (saved) {
+                selections = JSON.parse(saved);
+            }
+            renderSelections();
+        }
+
+        function saveSelections() {
+            localStorage.setItem('selections', JSON.stringify(selections));
+        }
+
+        function addSelection() {
+            const name = prompt('Введите название выбора:');
+            if (!name || !name.trim()) return;
+
+            const value = prompt('Введите значение:');
+            if (!value || !value.trim()) return;
+
+            selections.push({ name: name.trim(), value: value.trim() });
+            saveSelections();
+            renderSelections();
+        }
+
+        function deleteSelection(index) {
+            if (!confirm('Удалить этот выбор?')) return;
+            selections.splice(index, 1);
+            saveSelections();
+            renderSelections();
+        }
+
+        function editSelection(index) {
+            const selection = selections[index];
+            const newName = prompt('Введите новое название:', selection.name);
+            if (newName === null) return;
+            
+            const newValue = prompt('Введите новое значение:', selection.value);
+            if (newValue === null) return;
+
+            if (newName.trim() && newValue.trim()) {
+                selections[index] = { name: newName.trim(), value: newValue.trim() };
+                saveSelections();
+                renderSelections();
+            }
+        }
+
+        function renderSelections() {
+            const container = document.getElementById('selectionsList');
+            
+            if (selections.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">Нет добавленных выборов</p>';
+                return;
+            }
+
+            container.innerHTML = selections.map((sel, index) => `
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${sel.name}</div>
+                        <div style="font-size: 14px; color: var(--text-secondary);">${sel.value}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="editSelection(${index})" style="padding: 8px 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                        <button class="btn btn-secondary" onclick="deleteSelection(${index})" style="padding: 8px 12px; background: var(--danger);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Загружаем выборы при инициализации
+        loadSelections();
 
     </script>
 </body>

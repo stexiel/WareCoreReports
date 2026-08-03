@@ -1,0 +1,21 @@
+{
+  "name": "warecore-reports-backend",
+  "version": "1.0.0",
+  "description": "Backend API для WareCore Reports — автозагрузка данных из SQL Server (WMS_1386 / WCS_1386) для генератора Excel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.6.1",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mssql": "^11.0.1",
+    "selfsigned": "^5.5.0"
+  }
+}
