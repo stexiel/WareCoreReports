@@ -20,6 +20,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.5.4",
+    "node-windows": "^1.0.0-beta.8",
     "oxlint": "^1.71.0",
     "postcss": "^8.5.23",
     "tailwindcss": "^4.3.3",

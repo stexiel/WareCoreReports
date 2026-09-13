@@ -1,3 +1,7 @@
 node_modules/
-server/.env
+backend/.env
+telegram-bot/.env
+whatsapp-bot/.env
+whatsapp-bot/.wwebjs_auth/
+whatsapp-bot/.wwebjs_cache/
 *.log

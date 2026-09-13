@@ -1,0 +1,31 @@
+<service>
+	<id>warecorebackend.exe</id>
+	<name>WareCore Backend</name>
+	<description>WareCore Reports Backend Server</description>
+	<executable>C:\Program Files\nodejs\node.exe</executable>
+	<argument>--max-old-space-size=4096</argument>
+	<argument>C:\Users\Administrator\Desktop\асер\WareCore Reports\backend\node_modules\node-windows\lib\wrapper.js</argument>
+	<argument>--file</argument>
+	<argument>C:\Users\Administrator\Desktop\асер\WareCore Reports\backend\server.js</argument>
+	<argument>--scriptoptions=</argument>
+	<argument>--log</argument>
+	<argument>WareCore Backend wrapper</argument>
+	<argument>--grow</argument>
+	<argument>0.25</argument>
+	<argument>--wait</argument>
+	<argument>1</argument>
+	<argument>--maxrestarts</argument>
+	<argument>3</argument>
+	<argument>--abortonerror</argument>
+	<argument>n</argument>
+	<argument>--stopparentfirst</argument>
+	<argument>undefined</argument>
+	<logmode>rotate</logmode>
+	<stoptimeout>30sec</stoptimeout>
+	<serviceaccount>
+		<domain>DESKTOP-A339G5R</domain>
+		<user>LocalSystem</user>
+		<password></password>
+	</serviceaccount>
+	<workingdirectory>C:\Users\Administrator\Desktop\асер\WareCore Reports\backend</workingdirectory>
+</service>

@@ -1,7 +1,4 @@
 import { useState } from 'react'
-import Receipt from './Receipt'
-import Admin from './Admin'
-import Profile from './Profile'
 import QuickCalc from './QuickCalc'
 import BatchAnalysis from './BatchAnalysis'
 import PalletAnalysis from './PalletAnalysis'
@@ -11,50 +8,35 @@ import Translator from './Translator'
 import PairsAnalysis from './PairsAnalysis'
 import AutoDB from './AutoDB'
 import PalletOpt from './PalletOpt'
+import OperatorReport from './OperatorReport'
+import InputTool from './InputTool'
 
-function Dashboard({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState('receipt')
+function Dashboard() {
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('activeTab') || 'palletOpt')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const isAdmin = user.role === 'admin'
-  const isOperator = user.role === 'operator'
-  const isWarehouseman = user.role === 'warehouseman'
-
-  // Автоматически переключаем на приемку для кладовщика
-  if (isWarehouseman && activeTab !== 'receipt') {
-    setActiveTab('receipt')
-  }
-
+  // Локальные инструменты не требуют backend/БД, работают всегда.
+  // Отчёты требуют backend + подключение к SQL Server (WMS/WCS).
   const navItems = [
-    { id: 'admin', label: 'Управление пользователями', icon: 'users', roles: ['admin'], section: 'user' },
-    { id: 'profile', label: 'Профиль', icon: 'user', roles: ['admin', 'operator'], section: 'user' },
-    { id: 'settings', label: 'Настройки', icon: 'settings', roles: ['admin', 'operator'], section: 'user' },
-    { id: 'translator', label: 'Переводчик', icon: 'translate', roles: ['admin', 'operator'], section: 'tools' },
-    { id: 'palletOpt', label: 'Создание приемки', icon: 'check', roles: ['admin', 'operator'], section: 'general' },
-    { id: 'receipt', label: 'Приемка', icon: 'receipt', roles: ['admin', 'operator', 'warehouseman'], section: 'general' },
-    { id: 'autodb', label: 'Автозагрузка из БД', icon: 'database', roles: ['admin', 'operator'], section: 'wcs' },
-    { id: 'excel', label: 'Генератор Excel', icon: 'file', roles: ['admin', 'operator'], section: 'wcs' },
-    { id: 'pallet', label: 'Анализ паллет', icon: 'grid', roles: ['admin', 'operator'], section: 'wcs' },
-    { id: 'quick', label: 'Быстрый расчёт', icon: 'clock', roles: ['admin', 'operator'], section: 'wcs' },
-    { id: 'batch', label: 'Пакетный анализ', icon: 'calendar', roles: ['admin', 'operator'], section: 'wcs' },
-    { id: 'pairs', label: 'Пакетный анализ 2.0', icon: 'users', roles: ['admin', 'operator'], section: 'wcs' },
+    { id: 'translator', label: 'Переводчик', icon: 'translate', section: 'local' },
+    { id: 'inputTool', label: 'Поле ввода', icon: 'edit', section: 'local' },
+    { id: 'palletOpt', label: 'Создание приемки', icon: 'check', section: 'local' },
+    { id: 'excel', label: 'Генератор Excel', icon: 'file', section: 'local' },
+    { id: 'pallet', label: 'Анализ паллет', icon: 'grid', section: 'local' },
+    { id: 'quick', label: 'Быстрый расчёт', icon: 'clock', section: 'local' },
+    { id: 'batch', label: 'Пакетный анализ', icon: 'calendar', section: 'local' },
+    { id: 'pairs', label: 'Пакетный анализ 2.0', icon: 'users', section: 'local' },
+    { id: 'settings', label: 'Настройки', icon: 'settings', section: 'local' },
+    { id: 'autodb', label: 'Автозагрузка из БД', icon: 'database', section: 'backend' },
+    { id: 'operatorReport', label: 'Отчет операторов', icon: 'report', section: 'backend' },
   ]
 
   const sectionTitles = {
-    user: 'Пользователь',
-    tools: 'Инструменты',
-    general: 'Общие',
-    wcs: 'WCS операторы',
+    local: 'Локальные инструменты',
+    backend: 'Отчёты (нужен backend)',
   }
 
   const icons = {
-    receipt: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-        <line x1="12" y1="22.08" x2="12" y2="12"/>
-      </svg>
-    ),
     clock: (
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="12" r="10"/>
@@ -93,23 +75,10 @@ function Dashboard({ user, onLogout }) {
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     ),
-    user: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-      </svg>
-    ),
     settings: (
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
-    ),
-    logout: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
       </svg>
     ),
     edit: (
@@ -141,17 +110,18 @@ function Dashboard({ user, onLogout }) {
         <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
       </svg>
     ),
+    report: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+    ),
   }
 
-  const filteredNavItems = navItems.filter(item => item.roles.includes(user.role))
-
-  // Для кладовщика показываем только секцию general
-  const allowedSections = isWarehouseman ? ['general'] : null
-
-  const groupedNavItems = filteredNavItems.reduce((acc, item) => {
-    if (allowedSections && !allowedSections.includes(item.section)) {
-      return acc
-    }
+  const groupedNavItems = navItems.reduce((acc, item) => {
     if (!acc[item.section]) {
       acc[item.section] = []
     }
@@ -161,12 +131,6 @@ function Dashboard({ user, onLogout }) {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'receipt':
-        return <Receipt user={user} />
-      case 'admin':
-        return <Admin user={user} />
-      case 'profile':
-        return <Profile user={user} />
       case 'quick':
         return <QuickCalc />
       case 'batch':
@@ -176,15 +140,19 @@ function Dashboard({ user, onLogout }) {
       case 'excel':
         return <ExcelGenerator />
       case 'settings':
-        return <Settings user={user} />
+        return <Settings />
       case 'translator':
         return <Translator />
+      case 'inputTool':
+        return <InputTool />
       case 'pairs':
         return <PairsAnalysis />
       case 'autodb':
         return <AutoDB />
       case 'palletOpt':
         return <PalletOpt />
+      case 'operatorReport':
+        return <OperatorReport />
       default:
         return (
           <div className="card text-center">
@@ -213,7 +181,6 @@ function Dashboard({ user, onLogout }) {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="logo">
           <div className="logo-content">
-            <img src="/icon.png" className="logo-icon" alt="WareCore Logo" />
             <div>
               <div className="logo-text">WareCore</div>
               <div className="logo-subtitle">Reports System</div>
@@ -230,6 +197,7 @@ function Dashboard({ user, onLogout }) {
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id)
+                    localStorage.setItem('activeTab', item.id)
                     setSidebarOpen(false)
                   }}
                   className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
@@ -242,18 +210,6 @@ function Dashboard({ user, onLogout }) {
           ))}
         </nav>
 
-        <div className="user-profile">
-          <div className="avatar">{user.username.charAt(0).toUpperCase()}</div>
-          <div className="user-info">
-            <div className="user-name">{user.username}</div>
-            <div className="user-role">
-              {user.role === 'admin' ? 'Администратор' : user.role === 'operator' ? 'Оператор' : 'Кладовщик'}
-            </div>
-          </div>
-          <button className="logout-btn" onClick={onLogout} title="Выход">
-            {icons.logout}
-          </button>
-        </div>
       </aside>
 
       {sidebarOpen && (
@@ -264,9 +220,8 @@ function Dashboard({ user, onLogout }) {
         <div className="header">
           <div>
             <h1 className="header-title">
-              {filteredNavItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
+              {navItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
             </h1>
-            <p className="header-subtitle">Добро пожаловать, {user.username}</p>
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ExcelJS from 'exceljs'
+import { checkBackendHealth } from '../api'
 
 function AutoDB() {
   const [shift, setShift] = useState('currentDay')
@@ -11,16 +12,68 @@ function AutoDB() {
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
 
-  // Автоопределение текущей смены при загрузке
+  const [techServiceList, setTechServiceList] = useState([])
+  const [wcsEngineersList, setWcsEngineersList] = useState([])
+  const [showAddTech, setShowAddTech] = useState(false)
+  const [showAddEngineer, setShowAddEngineer] = useState(false)
+  const [newTechName, setNewTechName] = useState('')
+  const [newEngineerName, setNewEngineerName] = useState('')
+
+  const [backendAvailable, setBackendAvailable] = useState(null)
+
+  // Распарсенные данные, которые можно править прямо в проекте
+  const [excelData, setExcelData] = useState([])
+  const [shipRows, setShipRows] = useState([])
+  const [recvRows, setRecvRows] = useState([])
+  const [palletsInput, setPalletsInput] = useState('')
+  const [palletStats, setPalletStats] = useState({ paired: 0, unpaired: 0, total: 0 })
+
+  const getApiBase = () => 'http://172.30.1.249:3000'
+
+  const loadSavedData = () => {
+    try {
+      const savedTech = localStorage.getItem('techServiceList')
+      const savedEng = localStorage.getItem('wcsEngineersList')
+      setTechServiceList(savedTech ? JSON.parse(savedTech) : [{ id: 1, name: 'Лёша, Владимир' }])
+      setWcsEngineersList(savedEng ? JSON.parse(savedEng) : [{ id: 1, name: 'Aser' }])
+
+      const savedInzhener = localStorage.getItem('dbInzhener') || localStorage.getItem('excelInzhener')
+      const savedTex = localStorage.getItem('dbTex') || localStorage.getItem('excelTex')
+      if (savedInzhener) setInzhener(savedInzhener)
+      if (savedTex) setTex(savedTex)
+
+      const savedExcelData = localStorage.getItem('dbExcelData')
+      const savedShipRows = localStorage.getItem('dbShipmentRows')
+      const savedRecvRows = localStorage.getItem('dbReceiptRows')
+      const savedPalletsInput = localStorage.getItem('dbShiftPalletsInput')
+      if (savedExcelData) setExcelData(JSON.parse(savedExcelData))
+      if (savedShipRows) setShipRows(JSON.parse(savedShipRows))
+      if (savedRecvRows) setRecvRows(JSON.parse(savedRecvRows))
+      if (savedPalletsInput) setPalletsInput(savedPalletsInput)
+    } catch (err) {
+      console.error('Error loading saved AutoDB data:', err)
+    }
+  }
+
+  const recheckBackend = async () => {
+    setBackendAvailable(null)
+    const ok = await checkBackendHealth()
+    setBackendAvailable(ok)
+  }
+
   useEffect(() => {
     const now = new Date()
     const hour = now.getHours()
-    // Дневная смена: 08:00 - 20:00
-    // Ночная смена: 20:00 - 08:00
     const autoShift = (hour >= 8 && hour < 20) ? 'currentDay' : 'currentNight'
     setShift(autoShift)
     updateDates(autoShift)
+    loadSavedData()
+    recheckBackend()
   }, [])
+
+  useEffect(() => {
+    setPalletStats(getPalletStats(palletsInput))
+  }, [palletsInput])
 
   const handleShiftChange = (e) => {
     setShift(e.target.value)
@@ -77,63 +130,101 @@ function AutoDB() {
       setDbTo(formatDateTimeLocal(to))
     } else {
       const date = new Date(e.target.value + 'T20:00')
-      const to = new Date(date.getTime() + 12 * 60 * 60 * 1000)
+      const nextDay = new Date(date)
+      nextDay.setDate(nextDay.getDate() + 1)
+      nextDay.setHours(8, 0, 0)
       setDbFrom(formatDateTimeLocal(date))
-      setDbTo(formatDateTimeLocal(to))
+      setDbTo(formatDateTimeLocal(nextDay))
     }
   }
 
-  const downloadExcel = async (workbook, fileName) => {
-    const buffer = await workbook.xlsx.writeBuffer()
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    a.click()
-    window.URL.revokeObjectURL(url)
+  const handleAddTech = () => {
+    if (!newTechName.trim()) return
+    const next = [...techServiceList, { id: Date.now() + Math.random(), name: newTechName.trim() }]
+    setTechServiceList(next)
+    localStorage.setItem('techServiceList', JSON.stringify(next))
+    setTex(newTechName.trim())
+    setNewTechName('')
+    setShowAddTech(false)
   }
 
-  const getApiBase = () => {
-    return 'http://localhost:3000'
+  const handleAddEngineer = () => {
+    if (!newEngineerName.trim()) return
+    const next = [...wcsEngineersList, { id: Date.now() + Math.random(), name: newEngineerName.trim() }]
+    setWcsEngineersList(next)
+    localStorage.setItem('wcsEngineersList', JSON.stringify(next))
+    setInzhener(newEngineerName.trim())
+    setNewEngineerName('')
+    setShowAddEngineer(false)
   }
 
   const fetchJSON = async (url) => {
-    const token = localStorage.getItem('authToken')
-    const headers = {
-      'Content-Type': 'application/json'
-    }
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-    const response = await fetch(url, { headers })
+    const response = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' }
+    })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    return await response.json()
+    return response.json()
   }
 
   const extractHMS = (datetimeStr) => {
     if (!datetimeStr) return ''
-    const match = datetimeStr.match(/\d{2}:\d{2}:\d{2}/)
+    const match = String(datetimeStr).match(/\d{2}:\d{2}:\d{2}/)
     return match ? match[0] : ''
   }
 
-  const loadFromDatabase = async () => {
-    const from = dbFrom
-    const to = dbTo
+  const parseHMS = (hms) => {
+    if (!hms) return null
+    const parts = hms.split(':')
+    if (parts.length < 2) return null
+    const h = parseInt(parts[0])
+    const m = parseInt(parts[1])
+    const s = parseInt(parts[2] || 0)
+    if (isNaN(h) || isNaN(m) || isNaN(s)) return null
+    return h * 3600 + m * 60 + s
+  }
 
-    if (!from || !to) {
+  const calcTotalMinutes = (startHMS, endHMS) => {
+    const startSec = parseHMS(startHMS)
+    const endSec = parseHMS(endHMS)
+    if (startSec === null || endSec === null) return ''
+    let d = endSec - startSec
+    if (d < 0) d += 86400
+    return Math.round(d / 60)
+  }
+
+  const getPalletStats = (input) => {
+    const lines = (input || '').trim().split('\n').filter(line => line.trim())
+    const pallets = {}
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (trimmed.length < 3) continue
+      const type = trimmed.slice(-2)
+      const id = trimmed.slice(0, -2)
+      if (!pallets[id]) pallets[id] = { d1: false, d2: false }
+      if (type === 'D1') pallets[id].d1 = true
+      if (type === 'D2') pallets[id].d2 = true
+    }
+    let paired = 0
+    let unpaired = 0
+    for (const id in pallets) {
+      if (pallets[id].d1 && pallets[id].d2) paired++
+      else unpaired++
+    }
+    return { paired, unpaired, total: paired * 2 + unpaired }
+  }
+
+  const loadFromDatabase = async () => {
+    if (!dbFrom || !dbTo) {
       setStatus('❌ Укажите начало и окончание смены')
-      return
+      return false
     }
 
     const base = getApiBase()
     setLoading(true)
     setStatus('⏳ Загрузка из БД...')
 
-    console.log('Запрос к БД с параметрами:', from, '-', to)
-
     try {
-      const qs = `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+      const qs = `from=${encodeURIComponent(dbFrom)}&to=${encodeURIComponent(dbTo)}`
       const [faultRes, shipRes, recvRes, palletRes] = await Promise.all([
         fetchJSON(`${base}/api/fault-report?${qs}`),
         fetchJSON(`${base}/api/shipment?${qs}`),
@@ -141,44 +232,18 @@ function AutoDB() {
         fetchJSON(`${base}/api/pallets?${qs}`)
       ])
 
-      console.log('Получено из БД ошибок:', faultRes.rows.length)
-      console.log('Пример данных из БД:', faultRes.rows[0])
-
-      // Преобразуем даты в объекты Date для фильтрации
-      // from и to в локальном формате (без timezone), интерпретируем как локальное время
-      const fromDate = new Date(from)
-      const toDate = new Date(to)
-
-      // Переводим from/to в UTC для сравнения с данными из БД (которые в UTC)
-      const fromDateUTC = new Date(fromDate.getTime() - fromDate.getTimezoneOffset() * 60000)
-      const toDateUTC = new Date(toDate.getTime() - toDate.getTimezoneOffset() * 60000)
-
-      console.log('Фильтр по времени (local):', fromDate.toISOString(), '-', toDate.toISOString())
-      console.log('Фильтр по времени (UTC):', fromDateUTC.toISOString(), '-', toDateUTC.toISOString())
-
-      // ---- 1. Ошибки штабелеров (eqpt_fault_record) ----
+      // ---- 1. Ошибки штабелеров ----
       const parsedRows = faultRes.rows
-        .filter(r => {
-          if (!r.stacker) return false
-          // Данные из БД в UTC формате (с Z), сравниваем с UTC диапазоном
-          const beginTime = new Date(r.beginTime)
-          const inRange = beginTime >= fromDateUTC && beginTime <= toDateUTC
-          console.log('Проверка записи:', r.beginTime, 'inRange:', inRange)
-          if (!inRange) {
-            console.log('Отфильтровано:', r.beginTime)
-          }
-          return inRange
-        })
+        .filter(r => r.stacker)
         .map(r => ({
+          id: Date.now() + Math.random(),
           time: extractHMS(r.beginTime),
           endTime: extractHMS(r.finishTime),
           startISO: (r.beginTime || '').substring(0, 19),
-          rawStart: extractHMS(r.beginTime),
-          rawEnd: extractHMS(r.finishTime),
-          stacker: r.stacker
+          stacker: r.stacker,
+          statuses: Array(10).fill('').map((_, i) => i + 1 === r.stacker ? 'F06' : '')
         }))
 
-      // Сортировка с учётом ночной смены 20:00–08:00
       function shiftSortKey(isoStr) {
         const d = new Date(isoStr)
         const h = d.getHours()
@@ -187,56 +252,56 @@ function AutoDB() {
       }
       parsedRows.sort((a, b) => shiftSortKey(a.startISO) - shiftSortKey(b.startISO))
 
-      // Строим excelData с statuses как в старой версии
       const excelData = parsedRows.map(row => ({
+        id: row.id,
         time: row.time,
         endTime: row.endTime,
         startISO: row.startISO,
         stacker: row.stacker,
-        statuses: Array(10).fill('').map((_, i) => i + 1 === row.stacker ? 'F06' : '')
+        statuses: row.statuses
       }))
 
-      // ---- 2. Отгрузка (out_delivering_bill) ----
-      const newShipRows = []
-      shipRes.rows.forEach(r => {
-        // Фильтрация по времени на стороне клиента (UTC)
-        const startTime = new Date(r.start_time)
-        if (startTime >= fromDateUTC && startTime <= toDateUTC) {
-          newShipRows.push({
-            id: Date.now() + Math.random(),
-            kisNum: r.bill_no || '',
-            palletQty: r.qty || 0,
-            startTime: extractHMS(r.start_time),
-            endTime: extractHMS(r.end_time),
-            totalTime: ''
-          })
+      // ---- 2. Отгрузка ----
+      const newShipRows = shipRes.rows.map(r => {
+        const startTime = extractHMS(r.start_time)
+        const endTime = extractHMS(r.end_time)
+        return {
+          id: Date.now() + Math.random(),
+          kisNum: r.bill_no || '',
+          palletQty: r.qty || 0,
+          startTime,
+          endTime,
+          totalTime: calcTotalMinutes(startTime, endTime)
         }
       })
 
-      // ---- 3. Приемка (in_receiving_bill) ----
-      const newRecvRows = []
-      recvRes.rows.forEach(r => {
-        // Фильтрация по времени на стороне клиента (UTC)
-        const startTime = new Date(r.start_time)
-        if (startTime >= fromDateUTC && startTime <= toDateUTC) {
-          newRecvRows.push({
-            id: Date.now() + Math.random(),
-            kisNum: r.bill_no || '',
-            palletQty: r.qty || 0,
-            startTime: extractHMS(r.start_time),
-            endTime: extractHMS(r.end_time),
-            totalTime: ''
-          })
+      // ---- 3. Приемка ----
+      const newRecvRows = recvRes.rows.map(r => {
+        const startTime = extractHMS(r.start_time)
+        const endTime = extractHMS(r.end_time)
+        return {
+          id: Date.now() + Math.random(),
+          kisNum: r.bill_no || '',
+          palletQty: r.qty || 0,
+          startTime,
+          endTime,
+          totalTime: calcTotalMinutes(startTime, endTime)
         }
       })
 
-      // ---- 4. Паллеты D1/D2 (inv_container) ----
+      // ---- 4. Паллеты D1/D2 ----
       const palletLines = []
       palletRes.paired.forEach(p => { palletLines.push(p.id + 'D1'); palletLines.push(p.id + 'D2'); })
       palletRes.unpaired.forEach(p => { palletLines.push(p.id + (p.missing === 'D2' ? 'D1' : 'D2')); })
       const shiftPalletsInput = palletLines.join('\n')
 
-      // Сохраняем данные в localStorage для использования в ExcelGenerator
+      setExcelData(excelData)
+      setShipRows(newShipRows)
+      setRecvRows(newRecvRows)
+      setPalletsInput(shiftPalletsInput)
+      setPalletStats(getPalletStats(shiftPalletsInput))
+
+      // Сохраняем в localStorage для использования в ExcelGenerator
       localStorage.setItem('dbExcelData', JSON.stringify(excelData))
       localStorage.setItem('dbShipmentRows', JSON.stringify(newShipRows))
       localStorage.setItem('dbReceiptRows', JSON.stringify(newRecvRows))
@@ -244,51 +309,117 @@ function AutoDB() {
       localStorage.setItem('dbInzhener', inzhener || 'Aser')
       localStorage.setItem('dbTex', tex || 'Лёша, Владимир')
 
-      setStatus(`✅ Загружено: ошибок ${parsedRows.length}, отгрузка ${shipRes.rows.length}, приемка ${recvRes.rows.length}, паллет ${palletRes.totalRows}`)
+      setStatus(`✅ Загружено: ошибок ${excelData.length}, отгрузка ${newShipRows.length}, приемка ${newRecvRows.length}, паллет ${palletRes.totalRows}`)
+      return true
     } catch (err) {
       console.error('loadFromDatabase error:', err)
       setStatus('❌ Ошибка: ' + err.message)
+      return false
     } finally {
       setLoading(false)
     }
   }
 
-  const downloadBothFromDb = async () => {
+  const handleLoadFromDb = async () => {
     await loadFromDatabase()
-    if (status.startsWith('❌')) return
+  }
 
-    // Копируем данные из полей автозагрузки в поля генератора
-    localStorage.setItem('excelInzhener', inzhener || 'Aser')
-    localStorage.setItem('excelTex', tex || 'Лёша, Владимир')
+  const handleDownload = async () => {
+    if (!excelData.length && !shipRows.length && !recvRows.length && !palletsInput.trim()) {
+      setStatus('❌ Нет данных для генерации. Сначала загрузите из БД или введите вручную.')
+      return
+    }
 
-    // Генерируем и скачиваем оба Excel файла
+    setLoading(true)
     setStatus('⏳ Генерация Excel файлов...')
     try {
-      // Импортируем функции из ExcelGenerator
-      const { generateExcel, generateShiftReport } = await import('./ExcelGenerator.jsx')
+      localStorage.setItem('dbExcelData', JSON.stringify(excelData))
+      localStorage.setItem('dbShipmentRows', JSON.stringify(shipRows))
+      localStorage.setItem('dbReceiptRows', JSON.stringify(recvRows))
+      localStorage.setItem('dbShiftPalletsInput', palletsInput)
+      localStorage.setItem('dbInzhener', inzhener || 'Aser')
+      localStorage.setItem('dbTex', tex || 'Лёша, Владимир')
+      localStorage.setItem('excelInzhener', inzhener || 'Aser')
+      localStorage.setItem('excelTex', tex || 'Лёша, Владимир')
 
-      // Загружаем данные из localStorage
-      const dbExcelData = JSON.parse(localStorage.getItem('dbExcelData') || '[]')
-      const dbShipmentRows = JSON.parse(localStorage.getItem('dbShipmentRows') || '[]')
-      const dbReceiptRows = JSON.parse(localStorage.getItem('dbReceiptRows') || '[]')
-      const dbShiftPalletsInput = localStorage.getItem('dbShiftPalletsInput') || ''
-
-      // Вызываем генерацию файлов напрямую
-      await generateExcelWithDBData(dbExcelData, inzhener, tex)
+      await generateExcelWithDBData(excelData, inzhener, tex)
       await new Promise(r => setTimeout(r, 600))
-      await generateShiftReportWithDBData(dbShipmentRows, dbReceiptRows, dbShiftPalletsInput, dbExcelData, inzhener, tex)
+      await generateShiftReportWithDBData(shipRows, recvRows, palletsInput, excelData, inzhener, tex)
 
       setStatus('✅ Файлы скачаны!')
       setTimeout(() => setStatus(''), 3000)
     } catch (err) {
       console.error('Error generating Excel:', err)
       setStatus('❌ Ошибка генерации: ' + err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-  // Вспомогательные функции для генерации Excel с данными из БД
+  // ---- Редактирование распарсенных данных ----
+
+  const updateExcelRow = (index, field, value) => {
+    setExcelData(prev => {
+      const next = [...prev]
+      const row = { ...next[index] }
+      if (field === 'stacker') {
+        const num = parseInt(value) || 1
+        row.stacker = num
+        row.statuses = Array(10).fill('').map((_, i) => i + 1 === num ? 'F06' : '')
+      } else {
+        row[field] = value
+      }
+      next[index] = row
+      return next
+    })
+  }
+
+  const addExcelRow = () => {
+    setExcelData(prev => [...prev, {
+      id: Date.now() + Math.random(),
+      time: '',
+      endTime: '',
+      startISO: '',
+      stacker: 1,
+      statuses: Array(10).fill('').map((_, i) => i === 0 ? 'F06' : '')
+    }])
+  }
+
+  const updateShipRow = (index, field, value) => {
+    setShipRows(prev => {
+      const next = [...prev]
+      const row = { ...next[index], [field]: value }
+      if ((field === 'startTime' || field === 'endTime') && row.startTime && row.endTime) {
+        row.totalTime = calcTotalMinutes(row.startTime, row.endTime)
+      }
+      next[index] = row
+      return next
+    })
+  }
+
+  const addShipRow = () => {
+    setShipRows(prev => [...prev, { id: Date.now() + Math.random(), kisNum: '', palletQty: '', startTime: '', endTime: '', totalTime: '' }])
+  }
+
+  const updateRecvRow = (index, field, value) => {
+    setRecvRows(prev => {
+      const next = [...prev]
+      const row = { ...next[index], [field]: value }
+      if ((field === 'startTime' || field === 'endTime') && row.startTime && row.endTime) {
+        row.totalTime = calcTotalMinutes(row.startTime, row.endTime)
+      }
+      next[index] = row
+      return next
+    })
+  }
+
+  const addRecvRow = () => {
+    setRecvRows(prev => [...prev, { id: Date.now() + Math.random(), kisNum: '', palletQty: '', startTime: '', endTime: '', totalTime: '' }])
+  }
+
+  // ---- Генерация Excel с данными из БД ----
+
   const generateExcelWithDBData = async (data, inzhenerVal, texVal) => {
-    const ExcelJS = await import('exceljs')
     const workbook = new ExcelJS.Workbook()
     const ws = workbook.addWorksheet('Отчёт')
 
@@ -412,7 +543,6 @@ function AutoDB() {
       }
     })
 
-    // Автоматический расчет времени ошибок и ВОТС
     let autoErrorMinutes = 0
     let autoVOTSMinutes = 0
     for (const row of data) {
@@ -461,7 +591,6 @@ function AutoDB() {
   }
 
   const generateShiftReportWithDBData = async (shipRows, recvRows, palletsInput, errorData, inzhenerVal, texVal) => {
-    const ExcelJS = await import('exceljs')
     const workbook = new ExcelJS.Workbook()
     const ws = workbook.addWorksheet('Отчёт смены')
 
@@ -539,7 +668,6 @@ function AutoDB() {
     addDataRows(recvRows)
     ws.addRow([])
 
-    // Автоматический расчет ошибок
     let autoErrCount = 0
     let autoErrTime = 0
     let autoVOTSTime = 0
@@ -575,7 +703,6 @@ function AutoDB() {
       ['Имя тех службы',                   texVal],
       ['Инженер WCS',                      inzhenerVal],
     ]
-    const EMPTY = { font:{name:FONT,size:FSIZE}, alignment:{horizontal:'center',vertical:'middle'} }
     errRows.forEach(([label, val]) => {
       const r = ws.addRow([label, val])
       r.getCell(1).style = cs(BEIGE_ROW, true, 'left')
@@ -586,30 +713,8 @@ function AutoDB() {
     ws.addRow([])
 
     // Паллеты
-    const lines = palletsInput.trim().split('\n').filter(line => line.trim())
-    const pallets = {}
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed.length < 3) continue
-      const type = trimmed.slice(-2)
-      const id = trimmed.slice(0, -2)
-      if (!pallets[id]) {
-        pallets[id] = { d1: false, d2: false }
-      }
-      if (type === 'D1') pallets[id].d1 = true
-      if (type === 'D2') pallets[id].d2 = true
-    }
-    let paired = 0
-    let unpaired = 0
-    for (const id in pallets) {
-      const pallet = pallets[id]
-      if (pallet.d1 && pallet.d2) {
-        paired++
-      } else {
-        unpaired++
-      }
-    }
-    const total = paired * 2 + unpaired
+    const stats = getPalletStats(palletsInput)
+    const { paired, unpaired, total } = stats
     const pairedPct = total > 0 ? Math.round((paired * 2 / total) * 100) + '%' : '0%'
     const unpairedPct = total > 0 ? Math.round((unpaired / total) * 100) + '%' : '0%'
 
@@ -640,9 +745,38 @@ function AutoDB() {
     URL.revokeObjectURL(url)
   }
 
-  useEffect(() => {
-    updateDates('currentDay')
-  }, [])
+  if (backendAvailable === false) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <h2 className="card-title">Автозагрузка отчётов из БД</h2>
+            <p className="card-subtitle">Автоматическая загрузка данных из WMS/WCS и генерация Excel отчётов</p>
+          </div>
+        </div>
+        <div style={{ padding: '20px' }}>
+          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '10px', padding: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚠️</div>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444', margin: '0 0 8px' }}>Backend не работает</h3>
+            <p style={{ color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+              Не удалось подключиться к серверу. Эта страница требует запущенный backend с доступом к БД.
+            </p>
+            <button onClick={recheckBackend} className="btn btn-secondary">Повторить попытку</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (backendAvailable === null) {
+    return (
+      <div className="card">
+        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          Проверка соединения с backend...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="card">
@@ -715,45 +849,279 @@ function AutoDB() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">Инженер WCS</label>
-              <input
-                id="dbInzhener"
-                type="text"
-                value={inzhener}
-                onChange={(e) => setInzhener(e.target.value)}
-                className="form-input"
-                placeholder="Aser"
-              />
+              {!showAddEngineer ? (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <select
+                    id="dbInzhener"
+                    value={inzhener}
+                    onChange={(e) => setInzhener(e.target.value)}
+                    className="form-input"
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">Выберите из списка</option>
+                    {wcsEngineersList.map((w) => (
+                      <option key={w.id} value={w.name}>{w.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddEngineer(true)}
+                    className="btn btn-secondary"
+                    style={{ padding: '0 14px', fontSize: '18px', lineHeight: 1 }}
+                    title="Добавить нового инженера"
+                  >
+                    +
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newEngineerName}
+                    onChange={(e) => setNewEngineerName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddEngineer() }}
+                    className="form-input"
+                    style={{ flex: 1 }}
+                    placeholder="Новое имя инженера"
+                  />
+                  <button type="button" onClick={handleAddEngineer} className="btn btn-primary" style={{ padding: '0 14px' }}>
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddEngineer(false); setNewEngineerName('') }}
+                    className="btn btn-secondary"
+                    style={{ padding: '0 14px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">Тех служба</label>
-              <input
-                id="dbTex"
-                type="text"
-                value={tex}
-                onChange={(e) => setTex(e.target.value)}
-                className="form-input"
-                placeholder="Лёша, Владимир"
-              />
+              {!showAddTech ? (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <select
+                    id="dbTex"
+                    value={tex}
+                    onChange={(e) => setTex(e.target.value)}
+                    className="form-input"
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">Выберите из списка</option>
+                    {techServiceList.map((t) => (
+                      <option key={t.id} value={t.name}>{t.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTech(true)}
+                    className="btn btn-secondary"
+                    style={{ padding: '0 14px', fontSize: '18px', lineHeight: 1 }}
+                    title="Добавить нового сотрудника"
+                  >
+                    +
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newTechName}
+                    onChange={(e) => setNewTechName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddTech() }}
+                    className="form-input"
+                    style={{ flex: 1 }}
+                    placeholder="Новое имя сотрудника"
+                  />
+                  <button type="button" onClick={handleAddTech} className="btn btn-primary" style={{ padding: '0 14px' }}>
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddTech(false); setNewTechName('') }}
+                    className="btn btn-secondary"
+                    style={{ padding: '0 14px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             <button
-              id="dbDownloadBtn"
-              onClick={downloadBothFromDb}
+              id="dbLoadBtn"
+              onClick={handleLoadFromDb}
               disabled={loading}
-              className="btn btn-primary"
+              className="btn btn-secondary"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Загрузить и скачать 2 файла
+              Загрузить из БД
+            </button>
+            <button
+              id="dbDownloadBtn"
+              onClick={handleDownload}
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Скачать 2 файла Excel
             </button>
             <span id="dbLoadStatus" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{status}</span>
           </div>
         </div>
+
+        {/* ---- Редактирование распарсенных данных ---- */}
+        {(excelData.length > 0 || shipRows.length > 0 || recvRows.length > 0 || palletsInput) && (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+              <div style={{ width: '4px', height: '18px', background: '#22c55e', borderRadius: '2px' }}></div>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                Распарсенные данные (можно редактировать перед скачиванием)
+              </h3>
+            </div>
+
+            {/* Ошибки штабелеров */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ошибки штабелеров</span>
+                <button onClick={addExcelRow} className="btn btn-secondary" style={{ padding: '3px 12px', fontSize: '12px' }}>+ Добавить</button>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead style={{ background: 'var(--background)' }}>
+                    <tr>
+                      <th style={{ padding: '8px', border: '1px solid var(--border)', textAlign: 'left' }}>Время начала</th>
+                      <th style={{ padding: '8px', border: '1px solid var(--border)', textAlign: 'left' }}>Время окончания</th>
+                      <th style={{ padding: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>Штабелер</th>
+                      <th style={{ padding: '8px', border: '1px solid var(--border)', textAlign: 'center', width: '60px' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {excelData.map((row, index) => (
+                      <tr key={row.id || index}>
+                        <td style={{ padding: '6px', border: '1px solid var(--border)' }}>
+                          <input type="text" value={row.time} onChange={(e) => updateExcelRow(index, 'time', e.target.value)} className="form-input" placeholder="09:41:05" style={{ fontSize: '12px', padding: '6px' }} />
+                        </td>
+                        <td style={{ padding: '6px', border: '1px solid var(--border)' }}>
+                          <input type="text" value={row.endTime} onChange={(e) => updateExcelRow(index, 'endTime', e.target.value)} className="form-input" placeholder="10:16:30" style={{ fontSize: '12px', padding: '6px' }} />
+                        </td>
+                        <td style={{ padding: '6px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                          <select value={row.stacker} onChange={(e) => updateExcelRow(index, 'stacker', e.target.value)} className="form-input" style={{ fontSize: '12px', padding: '6px' }}>
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                              <option key={n} value={n}>{n}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td style={{ padding: '6px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                          <button onClick={() => setExcelData(excelData.filter((_, i) => i !== index))} style={{ padding: '6px 10px', background: 'var(--danger,#ef4444)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>✕</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Отгрузка */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Отгрузка</span>
+                <button onClick={addShipRow} className="btn btn-secondary" style={{ padding: '3px 12px', fontSize: '12px' }}>+ Добавить</button>
+              </div>
+              {shipRows.map((row, index) => (
+                <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'end' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Номер Кис</label>
+                    <input type="text" value={row.kisNum} onChange={(e) => updateShipRow(index, 'kisNum', e.target.value)} className="form-input" placeholder="АЛЦ-0114435" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Кол-во паллет</label>
+                    <input type="text" value={row.palletQty} onChange={(e) => updateShipRow(index, 'palletQty', e.target.value)} className="form-input" placeholder="40" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Время начала</label>
+                    <input type="text" value={row.startTime} onChange={(e) => updateShipRow(index, 'startTime', e.target.value)} className="form-input" placeholder="09:41:05" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Время окончания</label>
+                    <input type="text" value={row.endTime} onChange={(e) => updateShipRow(index, 'endTime', e.target.value)} className="form-input" placeholder="10:16:30" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <button onClick={() => setShipRows(shipRows.filter(r => r.id !== row.id))} style={{ padding: '8px 10px', background: 'var(--danger,#ef4444)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', height: '36px', marginBottom: 0 }}>✕</button>
+                </div>
+              ))}
+            </div>
+
+            {/* Приемка */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Приемка</span>
+                <button onClick={addRecvRow} className="btn btn-secondary" style={{ padding: '3px 12px', fontSize: '12px' }}>+ Добавить</button>
+              </div>
+              {recvRows.map((row, index) => (
+                <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'end' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Номер Кис</label>
+                    <input type="text" value={row.kisNum} onChange={(e) => updateRecvRow(index, 'kisNum', e.target.value)} className="form-input" placeholder="АЛЦ-0114435" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Кол-во паллет</label>
+                    <input type="text" value={row.palletQty} onChange={(e) => updateRecvRow(index, 'palletQty', e.target.value)} className="form-input" placeholder="40" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Время начала</label>
+                    <input type="text" value={row.startTime} onChange={(e) => updateRecvRow(index, 'startTime', e.target.value)} className="form-input" placeholder="09:41:05" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Время окончания</label>
+                    <input type="text" value={row.endTime} onChange={(e) => updateRecvRow(index, 'endTime', e.target.value)} className="form-input" placeholder="10:16:30" style={{ fontSize: '12px', padding: '6px' }} />
+                  </div>
+                  <button onClick={() => setRecvRows(recvRows.filter(r => r.id !== row.id))} style={{ padding: '8px 10px', background: 'var(--danger,#ef4444)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', height: '36px', marginBottom: 0 }}>✕</button>
+                </div>
+              ))}
+            </div>
+
+            {/* Паллеты */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Паллеты D1/D2</span>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Список паллет (ID + D1 или ID + D2, каждый с новой строки)</label>
+                <textarea value={palletsInput} onChange={(e) => setPalletsInput(e.target.value)} className="form-input" rows="4" placeholder="L01X01Y73Z01D1&#10;L01X01Y73Z01D2&#10;L02X02Y74Z01D1&#10;..."></textarea>
+              </div>
+              {(palletStats.total > 0 || palletsInput.trim()) && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', marginTop: '10px' }}>
+                  <div style={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Парные</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#22c55e' }}>{palletStats.paired}</div>
+                  </div>
+                  <div style={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Непарные</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#ef4444' }}>{palletStats.unpaired}</div>
+                  </div>
+                  <div style={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Всего</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>{palletStats.total}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1,0 +1,31 @@
+<service>
+	<id>warecoretelegrambot.exe</id>
+	<name>WareCore Telegram Bot</name>
+	<description>WareCore Reports Telegram Bot (страница «Приемка» в Telegram)</description>
+	<executable>C:\Program Files\nodejs\node.exe</executable>
+	<argument>--max-old-space-size=1024</argument>
+	<argument>C:\Users\Administrator\Desktop\асер\WareCore Reports\telegram-bot\node_modules\node-windows\lib\wrapper.js</argument>
+	<argument>--file</argument>
+	<argument>C:\Users\Administrator\Desktop\асер\WareCore Reports\telegram-bot\bot.js</argument>
+	<argument>--scriptoptions=</argument>
+	<argument>--log</argument>
+	<argument>WareCore Telegram Bot wrapper</argument>
+	<argument>--grow</argument>
+	<argument>0.25</argument>
+	<argument>--wait</argument>
+	<argument>1</argument>
+	<argument>--maxrestarts</argument>
+	<argument>3</argument>
+	<argument>--abortonerror</argument>
+	<argument>n</argument>
+	<argument>--stopparentfirst</argument>
+	<argument>undefined</argument>
+	<logmode>rotate</logmode>
+	<stoptimeout>30sec</stoptimeout>
+	<serviceaccount>
+		<domain>DESKTOP-A339G5R</domain>
+		<user>LocalSystem</user>
+		<password></password>
+	</serviceaccount>
+	<workingdirectory>C:\Users\Administrator\Desktop\асер\WareCore Reports\telegram-bot</workingdirectory>
+</service>
